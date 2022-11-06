@@ -1,0 +1,10 @@
+.dockerignore
+.DS_Store
+.editorconfig
+.github/
+.gitignore
+.gradle
+.idea
+build/
+Dockerfile
+README.md
