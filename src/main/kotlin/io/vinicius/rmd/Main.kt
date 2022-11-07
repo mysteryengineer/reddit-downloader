@@ -3,6 +3,12 @@ package io.vinicius.rmd
 import io.vinicius.rmd.model.Download
 import io.vinicius.rmd.model.Response
 import io.vinicius.rmd.model.Submission
+import io.vinicius.rmd.util.Emoji.basket
+import io.vinicius.rmd.util.Emoji.firecracker
+import io.vinicius.rmd.util.Emoji.frame
+import io.vinicius.rmd.util.Emoji.memo
+import io.vinicius.rmd.util.Emoji.movie
+import io.vinicius.rmd.util.Emoji.star
 import io.vinicius.rmd.util.Fetch
 import io.vinicius.rmd.util.Shell
 import kotlinx.coroutines.delay
@@ -19,51 +25,53 @@ fun main(args: Array<String>) {
     val limit: Int? = System.getenv("RMD_LIMIT")?.toInt()
 
     if (user == null || limit == null) {
-        error("🧨".em + " Missing the environment variable RMD_USER or RMD_LIMIT")
+        error("$firecracker Missing the environment variable RMD_USER or RMD_LIMIT")
     }
 
     val submissions = getSubmissions(user, limit)
     val downloads = downloadMedia(user, submissions)
 
     removeDuplicates(user, downloads)
-    println("\n🌟 Done!")
+    println("\n$star Done!")
 }
 
 private fun getSubmissions(user: String, limit: Int): Set<Submission> {
     val fetch = Fetch()
     val submissions = mutableSetOf<Submission>()
     var before = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+    var counter = 0
 
-    print("📝".em + " Collecting $limit posts from user [$user] ")
+    print("\n$memo Collecting $limit posts from user [$user] ")
 
-    repeat(ceil(limit / 250f).toInt()) {
+    do {
         val url = createUrl(user, before)
         val list = fetch.get<Response>(url).data
         submissions.addAll(list)
 
         // Getting the last "before"
-        before = list.last().created
+        before = list.lastOrNull()?.created ?: 0
+        counter++
 
         runBlocking {
             print(".")
             delay(2.seconds)
         }
-    }
+    } while (list.isNotEmpty() && counter < ceil(limit / 250f))
 
-    println(" $submissions/$limit unique posts found\n")
+    println(" ${submissions.size}/$limit unique posts found\n")
     return submissions.toSet()
 }
 
 private fun createUrl(user: String, before: Long): String {
     val baseUrl = "https://api.pushshift.io/reddit/submission/search"
     val fields = "author,created_utc,domain,post_hint,url"
-    return "${baseUrl}?author=${user}&fields=${fields}&before=${before}"
+    return "${baseUrl}?author=${user}&fields=${fields}&before=${before}&size=250"
 }
 
 private fun downloadMedia(user: String, submissions: Set<Submission>): List<Download> {
     val downloads = mutableListOf<Download>()
     val shell = Shell(File("/tmp/rmd/$user"))
-    val formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
+    val formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")
     val baseFile = "${LocalDateTime.now().format(formatter)}-$user"
     var fileName: String
 
@@ -72,11 +80,11 @@ private fun downloadMedia(user: String, submissions: Set<Submission>): List<Down
 
         val success = if (submission.postHint == "image") {
             fileName = "$baseFile-$number.jpg"
-            print("🖼".em + " [$number] Downloading image ${submission.url} ".padEnd(100, '.'))
+            print("$frame [$number] Downloading image ${submission.url} ".padEnd(100, '.'))
             shell.downloadImage(submission.url, fileName)
         } else {
             fileName = "$baseFile-$number.mp4"
-            print("🎥".em + " [$number] Downloading video ${submission.url} ".padEnd(100, '.'))
+            print("$movie [$number] Downloading video ${submission.url} ".padEnd(100, '.'))
             shell.downloadVideo(submission.url, fileName)
         }
 
@@ -91,7 +99,7 @@ private fun downloadMedia(user: String, submissions: Set<Submission>): List<Down
 }
 
 private fun removeDuplicates(user: String, downloads: List<Download>) {
-    println("\n" + "🗑".em + " Removing duplicated downloads...")
+    println("\n$basket Removing duplicated downloads...")
 
     // Removing 0-byte files
     downloads.forEach {
