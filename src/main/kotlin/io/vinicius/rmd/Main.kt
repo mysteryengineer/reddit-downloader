@@ -15,7 +15,7 @@ import kotlin.math.ceil
 import kotlin.time.Duration.Companion.seconds
 
 fun main(args: Array<String>) {
-    val user: String? = System.getenv("RMD_USERR")
+    val user: String? = System.getenv("RMD_USER")
     val limit: Int? = System.getenv("RMD_LIMIT")?.toInt()
 
     if (user == null || limit == null) {

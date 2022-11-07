@@ -8,12 +8,13 @@ import kotlin.time.Duration.Companion.minutes
 
 class Shell(private val directory: File) {
     init {
-        if(!directory.exists()) directory.mkdirs()
+        if (!directory.exists()) directory.mkdirs()
     }
 
     fun downloadImage(url: String, output: String): Boolean {
+        val userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:106.0) Gecko/20100101 Firefox/106.0"
         val dest = File(directory, output)
-        return runCommand("wget $url -O ${dest.absoluteFile}").isSuccess
+        return runCommand("wget -U \"$userAgent\" $url -O ${dest.absoluteFile}").isSuccess
     }
 
     fun downloadVideo(url: String, output: String): Boolean {
