@@ -18,7 +18,7 @@ RUN jdeps --print-module-deps --ignore-missing-deps --recursive --multi-release 
 # Build small JRE image
 RUN jlink --verbose \
          --add-modules $(cat /deps.txt) \
-         --add-modules jdk.crypto.ec \  # Needed for SSL connection
+         --add-modules jdk.crypto.ec \
          --strip-debug \
          --no-man-pages \
          --no-header-files \
