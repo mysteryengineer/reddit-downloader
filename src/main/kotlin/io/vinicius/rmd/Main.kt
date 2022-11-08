@@ -28,7 +28,7 @@ fun main(args: Array<String>) {
         error("$firecracker Missing the environment variable RMD_USER or RMD_LIMIT")
     }
 
-    val submissions = getSubmissions(user, limit)
+    val submissions = getSubmissions(user, limit).take(limit).toSet()
     val downloads = downloadMedia(user, submissions)
 
     removeDuplicates(user, downloads)
