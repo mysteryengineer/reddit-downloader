@@ -59,7 +59,7 @@ private fun getSubmissions(user: String, limit: Int): Set<Submission> {
     } while (list.isNotEmpty() && counter < ceil(limit / 250f))
 
     println(" ${submissions.size}/$limit unique posts found\n")
-    return submissions.toSet()
+    return submissions
 }
 
 private fun createUrl(user: String, before: Long): String {
@@ -76,7 +76,7 @@ private fun downloadMedia(user: String, submissions: Set<Submission>): List<Down
     var fileName: String
 
     submissions.forEachIndexed { index, submission ->
-        val number = (index + 1).toString().padStart(5, '0')
+        val number = (index + 1).toString().padStart(submissions.size, '0')
 
         val success = if (submission.postHint == "image") {
             fileName = "$baseFile-$number.jpg"
