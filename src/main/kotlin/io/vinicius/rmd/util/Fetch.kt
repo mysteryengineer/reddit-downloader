@@ -5,10 +5,13 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import okhttp3.*
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 class Fetch {
-    val client = OkHttpClient()
     val moshi = Moshi.Builder().build()
+    val client = OkHttpClient.Builder()
+        .connectTimeout(1, TimeUnit.MINUTES)
+        .build()
 
     inline fun <reified T> get(url: String): T {
         val adapter = moshi.adapter(T::class.java)
