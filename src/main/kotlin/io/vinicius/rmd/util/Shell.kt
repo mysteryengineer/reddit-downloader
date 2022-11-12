@@ -18,7 +18,7 @@ class Shell(private val directory: File, private val debug: Boolean = false) {
 
     fun downloadVideo(url: String, output: String): Boolean {
         val dest = File(directory, output)
-        return runCommand("youtube-dl $url -o ${dest.absoluteFile}").isSuccess
+        return runCommand("yt-dlp $url -o ${dest.absoluteFile}").isSuccess
     }
 
     fun calculateHash(fileName: String): String? {

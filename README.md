@@ -1,6 +1,6 @@
 # RMD (Reddit Media Downloader)
 
-Download all the picture/video posts from a particular user on Reddit, for uh...reasons. Automatically removes duplicates.
+Download all the picture/video posts from a particular user on Reddit, for uh... reasons. Automatically removes duplicates.
 
 ## 🖼️ Usage
 

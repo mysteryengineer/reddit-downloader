@@ -30,7 +30,7 @@ FROM alpine
 LABEL maintainer="Vinicius Egidio <me@vinicius.io>"
 
 # Dependencies
-RUN apk add --no-cache youtube-dl ffmpeg
+RUN apk add --no-cache yt-dlp ffmpeg
 
 # Create custom JRE
 ENV JAVA_HOME=/jre
