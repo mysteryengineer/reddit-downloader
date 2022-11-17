@@ -3,7 +3,7 @@ FROM --platform=$BUILDPLATFORM alpine AS BUILD_IMAGE
 ARG TARGETPLATFORM
 
 # Installing OpenJDK 17
-RUN apk add --no-cache openjdk17 binutils --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
+RUN apk add --no-cache openjdk17 --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
 
 # Build project
 COPY . /rmd
