@@ -11,14 +11,14 @@ class Shell(private val directory: File, private val debug: Boolean = false) {
         if (!directory.exists()) directory.mkdirs()
     }
 
-    fun downloadImage(url: String, output: String): Boolean {
+    fun downloadImage(url: String, output: String): Result<String> {
         val dest = File(directory, output)
-        return runCommand("wget $url -O ${dest.absoluteFile} -nv").isSuccess
+        return runCommand("wget $url -O ${dest.absoluteFile} -nv")
     }
 
-    fun downloadVideo(url: String, output: String): Boolean {
+    fun downloadVideo(url: String, output: String): Result<String> {
         val dest = File(directory, output)
-        return runCommand("yt-dlp $url -o ${dest.absoluteFile}").isSuccess
+        return runCommand("yt-dlp $url -o ${dest.absoluteFile}")
     }
 
     fun calculateHash(fileName: String): String? {
@@ -66,7 +66,7 @@ class Shell(private val directory: File, private val debug: Boolean = false) {
         }
 
         if (debug) println(output)
-        return output
+        return output.trim()
     }
     // endregion
 }

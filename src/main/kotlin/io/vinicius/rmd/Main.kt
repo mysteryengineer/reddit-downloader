@@ -33,6 +33,8 @@ fun main(args: Array<String>) {
     val downloads = downloadMedia(user, submissions)
 
     removeDuplicates(user, downloads)
+    createReport(user, downloads)
+
     println("\n$star Done!")
 }
 
@@ -80,7 +82,7 @@ private fun downloadMedia(user: String, submissions: Set<Submission>): List<Down
     submissions.forEachIndexed { index, submission ->
         val number = (index + 1).toString().padStart(padding, '0')
 
-        val success = if (submission.postHint == "image") {
+        val result = if (submission.postHint == "image") {
             fileName = "$baseFile-$number.jpg"
             print("$frame [$number] Downloading image ${submission.url} ".padEnd(100, '.'))
             shell.downloadImage(submission.url, fileName)
@@ -92,9 +94,16 @@ private fun downloadMedia(user: String, submissions: Set<Submission>): List<Down
 
         // Add to list of downloads
         val hash = shell.calculateHash(fileName).orEmpty()
-        downloads.add(Download(fileName, success, hash))
 
-        println(if (success) " ✅ [Success]" else " ❌ [Failure]")
+        downloads.add(Download(
+            url = submission.url,
+            fileName = fileName,
+            output = result.getOrNull() ?: result.exceptionOrNull()?.message ?: "<Nothing>",
+            isSuccess = result.isSuccess,
+            hash = hash
+        ))
+
+        println(if (result.isSuccess) " ✅ [Success]" else " ❌ [Failure]")
     }
 
     return downloads
@@ -118,5 +127,24 @@ private fun removeDuplicates(user: String, downloads: List<Download>) {
                 file.delete()
             }
         }
+    }
+}
+
+private fun createReport(user: String, downloads: List<Download>) {
+    File("/tmp/rmd/$user", "report.md").printWriter().use { out ->
+        out.println("# RMD - Download Report")
+
+        out.println("## Failed Downloads")
+        downloads
+            .filter { !it.isSuccess }
+            .forEach {
+                out.println("### 🔗 Link: ${it.url} - ❌ **Failure**")
+                out.println("### 📝 Output:")
+                out.println("```")
+                out.println(it.output)
+                out.println("```")
+
+                out.println("---")
+            }
     }
 }
