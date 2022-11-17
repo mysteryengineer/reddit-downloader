@@ -18,6 +18,7 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import kotlin.math.ceil
+import kotlin.math.min
 import kotlin.time.Duration.Companion.seconds
 
 fun main(args: Array<String>) {
@@ -28,7 +29,7 @@ fun main(args: Array<String>) {
         error("$firecracker Missing the environment variable RMD_USER or RMD_LIMIT")
     }
 
-    val submissions = getSubmissions(user, limit).take(limit).toSet()
+    val submissions = getSubmissions(user, limit)
     val downloads = downloadMedia(user, submissions)
 
     removeDuplicates(user, downloads)
@@ -58,8 +59,8 @@ private fun getSubmissions(user: String, limit: Int): Set<Submission> {
         }
     } while (list.isNotEmpty() && counter < ceil(limit / 250f))
 
-    println(" ${submissions.size}/$limit unique posts found\n")
-    return submissions
+    println(" ${min(submissions.size, limit)}/$limit unique posts found\n")
+    return submissions.take(limit).toSet()
 }
 
 private fun createUrl(user: String, before: Long): String {
@@ -73,10 +74,11 @@ private fun downloadMedia(user: String, submissions: Set<Submission>): List<Down
     val shell = Shell(File("/tmp/rmd/$user"))
     val formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")
     val baseFile = "${LocalDateTime.now().format(formatter)}-$user"
+    val padding = submissions.size.toString().count()
     var fileName: String
 
     submissions.forEachIndexed { index, submission ->
-        val number = (index + 1).toString().padStart(submissions.size, '0')
+        val number = (index + 1).toString().padStart(padding, '0')
 
         val success = if (submission.postHint == "image") {
             fileName = "$baseFile-$number.jpg"
