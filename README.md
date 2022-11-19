@@ -19,6 +19,7 @@ Where:
 
 - `-e RMD_USER` (mandatory): is the Reddit username that you want to download images/videos from.
 - `-e RMD_LIMIT` (mandatory): the maximum amount of files that you want to download.
+- `-e RMD_PARALLEL` (optional): the number of downloads to be done in parallel; default is 5.
 - `-e RMD_SIMILAR` (optional): the criteria to exclude similar files: `A` (all), `I` (images, only), `V` (videos, only).
 
 ## 💡 Similar Files

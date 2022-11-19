@@ -9,8 +9,7 @@ import io.vinicius.rmd.model.Submission
 import io.vinicius.rmd.util.Fetch
 import io.vinicius.rmd.util.Shell
 import io.vinicius.rmd.util.Shell.Companion.t
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import java.io.File
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -22,6 +21,7 @@ import kotlin.time.Duration.Companion.seconds
 fun main(args: Array<String>) {
     val user: String? = System.getenv("RMD_USER")
     val limit: Int? = System.getenv("RMD_LIMIT")?.toInt()
+    val parallel: Int = System.getenv("RMD_PARALLEL")?.toInt() ?: 5
     val similar: String? = System.getenv("RMD_SIMILAR")?.uppercase()
 
     if (user == null || limit == null) {
@@ -29,7 +29,7 @@ fun main(args: Array<String>) {
     }
 
     val submissions = getSubmissions(user, limit)
-    val downloads = downloadMedia(user, submissions)
+    val downloads = downloadMedia(user, submissions, parallel)
 
     removeDuplicates(user, downloads, similar)
     createReport(user, downloads)
@@ -72,41 +72,54 @@ private fun createUrl(user: String, before: Long): String {
     return "${baseUrl}?author=${user}&fields=${fields}&before=${before}&size=250"
 }
 
-private fun downloadMedia(user: String, submissions: Set<Submission>): List<Download> {
+@OptIn(ExperimentalCoroutinesApi::class)
+private fun downloadMedia(user: String, submissions: Set<Submission>, parallel: Int): List<Download> {
     val downloads = mutableListOf<Download>()
     val shell = Shell(File("/tmp/rmd/$user"))
     val formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")
     val baseFile = "${LocalDateTime.now().format(formatter)}-$user"
     val padding = submissions.size.toString().count()
-    var fileName: String
+    val parallelismContext = Dispatchers.IO.limitedParallelism(parallel)
 
-    submissions.forEachIndexed { index, submission ->
-        val number = (index + 1).toString().padStart(padding, '0')
+    runBlocking {
+        val jobs = submissions.mapIndexed { index, submission ->
+            launch(parallelismContext) {
+                val fileName: String
+                val number = (index + 1).toString().padStart(padding, '0')
 
-        val result = if (submission.postHint == "image") {
-            printDownloading(index, padding, submission)
-            fileName = "$baseFile-$number.jpg"
-            shell.downloadImage(submission.url, fileName)
-        } else {
-            printDownloading(index, padding, submission)
-            fileName = "$baseFile-$number.mp4"
-            shell.downloadVideo(submission.url, fileName)
+                val result = if (submission.postHint == "image") {
+                    printDownloading(index, padding, submission)
+                    fileName = "$baseFile-$number.jpg"
+                    shell.downloadImage(submission.url, fileName)
+                } else {
+                    printDownloading(index, padding, submission)
+                    fileName = "$baseFile-$number.mp4"
+                    shell.downloadVideo(submission.url, fileName)
+                }
+
+                // Add to list of downloads
+                val hash = shell.calculateHash(fileName).orEmpty()
+
+                downloads.add(
+                    Download(
+                        url = submission.url,
+                        fileName = fileName,
+                        output = result.getOrNull() ?: result.exceptionOrNull()?.message ?: "<Nothing>",
+                        isSuccess = result.isSuccess,
+                        hash = hash
+                    )
+                )
+
+//                t.println(
+//                    if (result.isSuccess)
+//                        " ✅ ${bold(green("Success"))}"
+//                    else
+//                        " ❌ ${bold(red("Failure"))}"
+//                )
+            }
         }
 
-        // Add to list of downloads
-        val hash = shell.calculateHash(fileName).orEmpty()
-
-        downloads.add(
-            Download(
-                url = submission.url,
-                fileName = fileName,
-                output = result.getOrNull() ?: result.exceptionOrNull()?.message ?: "<Nothing>",
-                isSuccess = result.isSuccess,
-                hash = hash
-            )
-        )
-
-        t.println(if (result.isSuccess) " ✅ ${bold(green("Success"))}" else " ❌ ${bold(red("Failure"))}")
+        jobs.joinAll()
     }
 
     return downloads
@@ -137,7 +150,7 @@ private fun removeDuplicates(user: String, downloads: List<Download>, option: St
         }
     }
 
-    // Removing similar images
+    // Removing similar
     val similarImages = if(option == "I" || option == "A") shell.findSimilar("image") else emptyList()
     val similarVideos = if(option == "V" || option == "A") shell.findSimilar("video") else emptyList()
     val similars = similarImages + similarVideos
@@ -191,6 +204,6 @@ fun printDownloading(index: Int, padding: Int, submission: Submission) {
         label = yellow("video")
     }
 
-    t.print("$emoji [${blue(bold(number))}] Downloading $label $url ".padEnd(141, '.'))
+    t.println("$emoji [${blue(bold(number))}] Downloading $label $url ".padEnd(141, '.'))
 }
 // endregion
