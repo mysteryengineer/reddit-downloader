@@ -38,7 +38,7 @@ LABEL maintainer="Vinicius Egidio <me@vinicius.io>"
 
 # Dependencies
 RUN apk add --no-cache ffmpeg && \
-    apk add --no-cache yt-dlp --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
+    apk add --no-cache yt-dlp czkawka --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
 
 # Create custom JRE
 ENV JAVA_HOME=/jre

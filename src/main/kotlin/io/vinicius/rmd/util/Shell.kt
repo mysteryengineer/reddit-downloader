@@ -31,6 +31,17 @@ class Shell(private val directory: File, private val debug: Boolean = false) {
         }
     }
 
+    fun findSimilarImages(): List<List<String>> {
+        val result = runCommand("czkawka image -d ${directory.absolutePath}").getOrNull()
+
+        return result?.split("\n\n")?.drop(1)?.map { group ->
+            group.split("\n").drop(1)
+                .map { data ->
+                    data.split(" - ").first()
+                }
+        } ?: emptyList()
+    }
+
     // region - Private methods
     private fun runCommand(
         command: String,

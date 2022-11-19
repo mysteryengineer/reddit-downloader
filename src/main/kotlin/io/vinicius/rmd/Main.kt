@@ -3,12 +3,6 @@ package io.vinicius.rmd
 import io.vinicius.rmd.model.Download
 import io.vinicius.rmd.model.Response
 import io.vinicius.rmd.model.Submission
-import io.vinicius.rmd.util.Emoji.basket
-import io.vinicius.rmd.util.Emoji.firecracker
-import io.vinicius.rmd.util.Emoji.frame
-import io.vinicius.rmd.util.Emoji.memo
-import io.vinicius.rmd.util.Emoji.movie
-import io.vinicius.rmd.util.Emoji.star
 import io.vinicius.rmd.util.Fetch
 import io.vinicius.rmd.util.Shell
 import kotlinx.coroutines.delay
@@ -26,7 +20,7 @@ fun main(args: Array<String>) {
     val limit: Int? = System.getenv("RMD_LIMIT")?.toInt()
 
     if (user == null || limit == null) {
-        error("$firecracker Missing the environment variable RMD_USER or RMD_LIMIT")
+        error("🧨 Missing the environment variable RMD_USER or RMD_LIMIT")
     }
 
     val submissions = getSubmissions(user, limit)
@@ -35,7 +29,7 @@ fun main(args: Array<String>) {
     removeDuplicates(user, downloads)
     createReport(user, downloads)
 
-    println("\n$star Done!")
+    println("\n🌟 Done!")
 }
 
 private fun getSubmissions(user: String, limit: Int): Set<Submission> {
@@ -44,7 +38,7 @@ private fun getSubmissions(user: String, limit: Int): Set<Submission> {
     var before = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
     var counter = 0
 
-    print("\n$memo Collecting $limit posts from user [$user] ")
+    print("\n📝 Collecting $limit posts from user [$user] ")
 
     do {
         val url = createUrl(user, before)
@@ -84,11 +78,11 @@ private fun downloadMedia(user: String, submissions: Set<Submission>): List<Down
 
         val result = if (submission.postHint == "image") {
             fileName = "$baseFile-$number.jpg"
-            print("$frame [$number] Downloading image ${submission.url} ".padEnd(100, '.'))
+            print("📸 [$number] Downloading image ${submission.url.take(68)} ".padEnd(100, '.'))
             shell.downloadImage(submission.url, fileName)
         } else {
             fileName = "$baseFile-$number.mp4"
-            print("$movie [$number] Downloading video ${submission.url} ".padEnd(100, '.'))
+            print("📹 [$number] Downloading video ${submission.url.take(68)} ".padEnd(100, '.'))
             shell.downloadVideo(submission.url, fileName)
         }
 
@@ -110,12 +104,17 @@ private fun downloadMedia(user: String, submissions: Set<Submission>): List<Down
 }
 
 private fun removeDuplicates(user: String, downloads: List<Download>) {
-    println("\n$basket Removing duplicated downloads...")
+    val shell = Shell(File("/tmp/rmd/$user"))
+
+    println("\n🚮 Removing duplicated downloads...")
 
     // Removing 0-byte files
     downloads.forEach {
         val file = File("/tmp/rmd/$user", it.fileName)
-        if (file.exists() && file.length() == 0L) file.delete()
+        if (file.exists() && file.length() == 0L) {
+            println("[Z] ${file.absoluteFile}")
+            file.delete()
+        }
     }
 
     // Removing duplicates
@@ -123,7 +122,19 @@ private fun removeDuplicates(user: String, downloads: List<Download>) {
         it.drop(1).forEach { download ->
             val file = File("/tmp/rmd/$user", download.fileName)
             if (file.exists()) {
-                println(file.absoluteFile)
+                println("[D] ${file.absoluteFile}")
+                file.delete()
+            }
+        }
+    }
+
+    // Removing similar
+    val similars = shell.findSimilarImages()
+    similars.forEach {
+        it.drop(1).forEach { similar ->
+            val file = File(similar)
+            if (file.exists()) {
+                println("[S] ${file.absoluteFile}")
                 file.delete()
             }
         }
@@ -131,10 +142,14 @@ private fun removeDuplicates(user: String, downloads: List<Download>) {
 }
 
 private fun createReport(user: String, downloads: List<Download>) {
+    val totalFailed = downloads.count { !it.isSuccess }
+
     File("/tmp/rmd/$user", "report.md").printWriter().use { out ->
         out.println("# RMD - Download Report")
 
         out.println("## Failed Downloads")
+        out.println("- Total: $totalFailed")
+
         downloads
             .filter { !it.isSuccess }
             .forEach {
