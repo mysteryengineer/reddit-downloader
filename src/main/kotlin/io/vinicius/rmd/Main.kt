@@ -1,10 +1,14 @@
 package io.vinicius.rmd
 
+import com.github.ajalt.mordant.rendering.TextColors.*
+import com.github.ajalt.mordant.rendering.TextStyles.bold
+import com.github.ajalt.mordant.rendering.TextStyles.underline
 import io.vinicius.rmd.model.Download
 import io.vinicius.rmd.model.Response
 import io.vinicius.rmd.model.Submission
 import io.vinicius.rmd.util.Fetch
 import io.vinicius.rmd.util.Shell
+import io.vinicius.rmd.util.Shell.Companion.t
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -18,6 +22,7 @@ import kotlin.time.Duration.Companion.seconds
 fun main(args: Array<String>) {
     val user: String? = System.getenv("RMD_USER")
     val limit: Int? = System.getenv("RMD_LIMIT")?.toInt()
+    val similar: String? = System.getenv("RMD_SIMILAR")?.uppercase()
 
     if (user == null || limit == null) {
         error("🧨 Missing the environment variable RMD_USER or RMD_LIMIT")
@@ -26,10 +31,10 @@ fun main(args: Array<String>) {
     val submissions = getSubmissions(user, limit)
     val downloads = downloadMedia(user, submissions)
 
-    removeDuplicates(user, downloads)
+    removeDuplicates(user, downloads, similar)
     createReport(user, downloads)
 
-    println("\n🌟 Done!")
+    t.println("\n🌟 Done!")
 }
 
 private fun getSubmissions(user: String, limit: Int): Set<Submission> {
@@ -38,7 +43,7 @@ private fun getSubmissions(user: String, limit: Int): Set<Submission> {
     var before = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
     var counter = 0
 
-    print("\n📝 Collecting $limit posts from user [$user] ")
+    print("\n📝 Collecting ${bold(limit.toString())} posts from user ${bold(user)} ")
 
     do {
         val url = createUrl(user, before)
@@ -50,12 +55,14 @@ private fun getSubmissions(user: String, limit: Int): Set<Submission> {
         counter++
 
         runBlocking {
-            print(".")
+            t.print(".")
             delay(2.seconds)
         }
     } while (list.isNotEmpty() && counter < ceil(limit / 250f))
 
-    println(" ${min(submissions.size, limit)}/$limit unique posts found\n")
+    t.println(" ${min(submissions.size, limit)}/$limit unique posts found")
+    t.println()
+
     return submissions.take(limit).toSet()
 }
 
@@ -77,42 +84,44 @@ private fun downloadMedia(user: String, submissions: Set<Submission>): List<Down
         val number = (index + 1).toString().padStart(padding, '0')
 
         val result = if (submission.postHint == "image") {
+            printDownloading(index, padding, submission)
             fileName = "$baseFile-$number.jpg"
-            print("📸 [$number] Downloading image ${submission.url.take(68)} ".padEnd(100, '.'))
             shell.downloadImage(submission.url, fileName)
         } else {
+            printDownloading(index, padding, submission)
             fileName = "$baseFile-$number.mp4"
-            print("📹 [$number] Downloading video ${submission.url.take(68)} ".padEnd(100, '.'))
             shell.downloadVideo(submission.url, fileName)
         }
 
         // Add to list of downloads
         val hash = shell.calculateHash(fileName).orEmpty()
 
-        downloads.add(Download(
-            url = submission.url,
-            fileName = fileName,
-            output = result.getOrNull() ?: result.exceptionOrNull()?.message ?: "<Nothing>",
-            isSuccess = result.isSuccess,
-            hash = hash
-        ))
+        downloads.add(
+            Download(
+                url = submission.url,
+                fileName = fileName,
+                output = result.getOrNull() ?: result.exceptionOrNull()?.message ?: "<Nothing>",
+                isSuccess = result.isSuccess,
+                hash = hash
+            )
+        )
 
-        println(if (result.isSuccess) " ✅ [Success]" else " ❌ [Failure]")
+        t.println(if (result.isSuccess) " ✅ ${bold(green("Success"))}" else " ❌ ${bold(red("Failure"))}")
     }
 
     return downloads
 }
 
-private fun removeDuplicates(user: String, downloads: List<Download>) {
+private fun removeDuplicates(user: String, downloads: List<Download>, option: String?) {
     val shell = Shell(File("/tmp/rmd/$user"))
 
-    println("\n🚮 Removing duplicated downloads...")
+    t.println("\n🚮 Removing duplicated downloads...")
 
     // Removing 0-byte files
     downloads.forEach {
         val file = File("/tmp/rmd/$user", it.fileName)
         if (file.exists() && file.length() == 0L) {
-            println("[Z] ${file.absoluteFile}")
+            t.println("[${brightBlue("Z")}] ${file.absoluteFile}")
             file.delete()
         }
     }
@@ -122,19 +131,22 @@ private fun removeDuplicates(user: String, downloads: List<Download>) {
         it.drop(1).forEach { download ->
             val file = File("/tmp/rmd/$user", download.fileName)
             if (file.exists()) {
-                println("[D] ${file.absoluteFile}")
+                t.println("[${brightRed("D")}] ${file.absoluteFile}")
                 file.delete()
             }
         }
     }
 
-    // Removing similar
-    val similars = shell.findSimilarImages()
+    // Removing similar images
+    val similarImages = if(option == "I" || option == "A") shell.findSimilar("image") else emptyList()
+    val similarVideos = if(option == "V" || option == "A") shell.findSimilar("video") else emptyList()
+    val similars = similarImages + similarVideos
+
     similars.forEach {
         it.drop(1).forEach { similar ->
             val file = File(similar)
             if (file.exists()) {
-                println("[S] ${file.absoluteFile}")
+                t.println("[${brightYellow("S")}] ${file.absoluteFile}")
                 file.delete()
             }
         }
@@ -163,3 +175,22 @@ private fun createReport(user: String, downloads: List<Download>) {
             }
     }
 }
+
+// region - Terminal
+fun printDownloading(index: Int, padding: Int, submission: Submission) {
+    val emoji: String
+    val label: String
+    val number = (index + 1).toString().padStart(padding, '0')
+    val url = brightCyan(underline(submission.url.take(68)))
+
+    if (submission.postHint == "image") {
+        emoji = "📸"
+        label = magenta("image")
+    } else {
+        emoji = "📹"
+        label = yellow("video")
+    }
+
+    t.print("$emoji [${blue(bold(number))}] Downloading $label $url ".padEnd(141, '.'))
+}
+// endregion

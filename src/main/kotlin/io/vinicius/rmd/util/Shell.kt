@@ -1,5 +1,6 @@
 package io.vinicius.rmd.util
 
+import com.github.ajalt.mordant.terminal.Terminal
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -7,6 +8,10 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 class Shell(private val directory: File, private val debug: Boolean = false) {
+    companion object {
+        val t = Terminal()
+    }
+
     init {
         if (!directory.exists()) directory.mkdirs()
     }
@@ -31,8 +36,8 @@ class Shell(private val directory: File, private val debug: Boolean = false) {
         }
     }
 
-    fun findSimilarImages(): List<List<String>> {
-        val result = runCommand("czkawka image -d ${directory.absolutePath}").getOrNull()
+    fun findSimilar(type: String): List<List<String>> {
+        val result = runCommand("czkawka $type -d ${directory.absolutePath}").getOrNull()
 
         return result?.split("\n\n")?.drop(1)?.map { group ->
             group.split("\n").drop(1)
