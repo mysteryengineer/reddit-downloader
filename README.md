@@ -18,9 +18,9 @@ $ docker run --rm -t \
 Where:
 
 - `-e RMD_USER` (mandatory): is the Reddit username that you want to download images/videos from.
-- `-e RMD_LIMIT` (mandatory): the maximum amount of files that you want to download.
+- `-e RMD_LIMIT` (mandatory): the maximum number of posts that you want to query for media files.
 - `-e RMD_PARALLEL` (optional): the number of downloads to be done in parallel; default is 5.
-- `-e RMD_SIMILAR` (optional): the criteria to exclude similar files: `A` (all), `I` (images, only), `V` (videos, only).
+- `-e RMD_SIMILAR` (optional): the criteria to exclude similar files: `I` (images only), `V` (videos only), `A` (all).
 
 ## 💡 Similar Files
 
@@ -28,7 +28,7 @@ This application will automatically delete all duplicated files that are identic
 
 If you set the parameter `RMD_SIMILAR` above then it will attempt to identify similar media files to exclude, but keep in mind that:
 - (1) the criteria of what is considered similar or not is subjective so this could end up deleting or (not deleting) files that you would expect otherwise.
-- (2) if you use the parameter `V` or `A`, which include the detection of similar videos, keep in mind that it could take a long time to identify similar videos depending on the number of videos that were downloaded.
+- (2) if you use the parameter `V` or `A`, which include the detection of similar videos, be aware that it could take a long time to identify similar videos depending on the number of files that were downloaded.
 
 ## 🛠️ Build
 

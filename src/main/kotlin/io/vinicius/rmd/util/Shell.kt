@@ -63,26 +63,23 @@ class Shell(private val directory: File, private val debug: Boolean = false) {
             .start()
 
         proc.waitFor(timeout.inWholeMilliseconds, TimeUnit.MILLISECONDS)
-        val output = processOutput(proc)
-
-        if (proc.exitValue() == 0) {
-            Result.success(output)
-        } else {
-            Result.failure(IOException(output))
-        }
+        processResult(proc)
     } catch (e: IOException) {
         Result.failure(e)
     }
 
-    private fun processOutput(proc: Process): String {
-        val output = if (proc.exitValue() == 0) {
-            proc.inputReader().readText()
+    private fun processResult(proc: Process): Result<String> {
+        val output: String
+        val result = if (proc.exitValue() == 0) {
+            output = proc.inputReader().readText().trim()
+            Result.success(output)
         } else {
-            proc.errorReader().readText()
+            output = proc.errorReader().readText().trim()
+            Result.failure(IOException(output))
         }
 
         if (debug) println(output)
-        return output.trim()
+        return result
     }
     // endregion
 }

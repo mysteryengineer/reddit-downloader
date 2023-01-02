@@ -28,7 +28,13 @@ fun main(args: Array<String>) {
         error("🧨 Missing the environment variable RMD_USER or RMD_LIMIT")
     }
 
-    val submissions = getSubmissions(user, limit)
+    val submissions = try {
+        getSubmissions(user, limit)
+    } catch (ex: Exception) {
+        error("\n🧨 Error fetching the posts; check if the servers are up by accessing the site " +
+                "https://stats.uptimerobot.com/l8RZDu1gBG")
+    }
+
     val downloads = downloadMedia(user, submissions, parallel)
 
     removeDuplicates(user, downloads, similar)
