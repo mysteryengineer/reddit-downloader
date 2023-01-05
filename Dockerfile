@@ -1,5 +1,5 @@
 ### Build Image ###
-FROM --platform=$BUILDPLATFORM alpine AS BUILD_IMAGE
+FROM --platform=$BUILDPLATFORM alpine:edge AS BUILD_IMAGE
 ARG TARGETPLATFORM
 
 # Installing OpenJDK 17
@@ -11,7 +11,7 @@ WORKDIR /rmd
 RUN ./gradlew shadowJar
 
 ### JRE Image ###
-FROM alpine AS JRE_IMAGE
+FROM alpine:edge AS JRE_IMAGE
 
 # Installing OpenJDK 17
 RUN apk add --no-cache openjdk17 binutils --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
@@ -33,7 +33,7 @@ RUN jlink --verbose \
          --output /customjre
 
 ### Main Image ###
-FROM alpine
+FROM alpine:edge
 LABEL maintainer="Vinicius Egidio <me@vinicius.io>"
 
 # Dependencies
