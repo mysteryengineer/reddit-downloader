@@ -64,7 +64,7 @@ private fun getSubmissions(user: String, limit: Int): Set<Submission> {
             t.print(".")
             delay(2.seconds)
         }
-    } while (list.isNotEmpty() && counter < ceil(limit / 250f))
+    } while (list.isNotEmpty() && counter < ceil(limit / 1000f))
 
     t.println(" ${min(submissions.size, limit)}/$limit unique posts found")
     t.println()
@@ -72,10 +72,11 @@ private fun getSubmissions(user: String, limit: Int): Set<Submission> {
     return submissions.take(limit).toSet()
 }
 
-private fun createUrl(user: String, before: Long): String {
+private fun createUrl(user: String, until: Long): String {
+    // Docs: https://api.pushshift.io/docs
     val baseUrl = "https://api.pushshift.io/reddit/submission/search"
-    val fields = "author,created_utc,domain,post_hint,url"
-    return "${baseUrl}?author=${user}&fields=${fields}&before=${before}&size=250"
+    val filter = "author,created_utc,domain,post_hint,url"
+    return "${baseUrl}?author=${user}&filter=${filter}&until=${until}&limit=1000"
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)

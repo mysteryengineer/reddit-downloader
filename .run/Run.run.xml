@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run" type="JetRunConfigurationType">
+    <envs>
+      <env name="RMD_USER" value="atomicbrunette18" />
+      <env name="RMD_LIMIT" value="1000" />
+    </envs>
+    <option name="MAIN_CLASS_NAME" value="io.vinicius.rmd.MainKt" />
+    <module name="rmd.main" />
+    <shortenClasspath name="NONE" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
