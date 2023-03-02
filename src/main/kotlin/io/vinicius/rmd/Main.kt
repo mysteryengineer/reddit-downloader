@@ -11,8 +11,7 @@ import io.vinicius.rmd.util.Shell
 import io.vinicius.rmd.util.Shell.Companion.t
 import kotlinx.coroutines.*
 import java.io.File
-import java.time.LocalDateTime
-import java.time.ZoneOffset
+import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.ceil
 import kotlin.math.min
@@ -46,7 +45,7 @@ fun main(args: Array<String>) {
 private fun getSubmissions(user: String, limit: Int): Set<Submission> {
     val fetch = Fetch()
     val submissions = mutableSetOf<Submission>()
-    var before = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+    var before = OffsetDateTime.now().toEpochSecond()
     var counter = 0
 
     print("\n📝 Collecting ${bold(limit.toString())} posts from user ${bold(user)} ")
@@ -84,7 +83,7 @@ private fun downloadMedia(user: String, submissions: Set<Submission>, parallel: 
     val downloads = mutableListOf<Download>()
     val shell = Shell(File("/tmp/rmd/$user"))
     val formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")
-    val baseFile = "${LocalDateTime.now().format(formatter)}-$user"
+    val baseFile = "${OffsetDateTime.now().format(formatter)}-$user"
     val padding = submissions.size.toString().count()
     val parallelismContext = Dispatchers.IO.limitedParallelism(parallel)
 
