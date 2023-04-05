@@ -1,15 +1,20 @@
 package io.vinicius.rmd
 
-import com.github.ajalt.mordant.rendering.TextColors.*
-import com.github.ajalt.mordant.rendering.TextStyles.bold
-import com.github.ajalt.mordant.rendering.TextStyles.underline
+import com.github.ajalt.mordant.animation.Animation
+import com.github.ajalt.mordant.animation.textAnimation
+import com.github.ajalt.mordant.rendering.TextColors
 import io.vinicius.rmd.model.Download
 import io.vinicius.rmd.model.Response
 import io.vinicius.rmd.model.Submission
 import io.vinicius.rmd.util.Fetch
 import io.vinicius.rmd.util.Shell
 import io.vinicius.rmd.util.Shell.Companion.t
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
@@ -48,7 +53,7 @@ private fun getSubmissions(user: String, limit: Int): Set<Submission> {
     var before = OffsetDateTime.now().toEpochSecond()
     var counter = 0
 
-    print("\n📝 Collecting ${bold(limit.toString())} posts from user ${bold(user)} ")
+    print("\n📝 Collecting ${t.colors.bold(limit.toString())} posts from user ${t.colors.bold(user)} ")
 
     do {
         val url = createUrl(user, before)
@@ -92,13 +97,13 @@ private fun downloadMedia(user: String, submissions: Set<Submission>, parallel: 
             launch(parallelismContext) {
                 val fileName: String
                 val number = (index + 1).toString().padStart(padding, '0')
+                val anim = printAnimation(index, padding, submission)
+                anim.update(DownloadStatus.Downloading)
 
                 val result = if (submission.postHint == "image") {
-                    printDownloading(index, padding, submission)
                     fileName = "$baseFile-$number.jpg"
                     shell.downloadImage(submission.url, fileName)
                 } else {
-                    printDownloading(index, padding, submission)
                     fileName = "$baseFile-$number.mp4"
                     shell.downloadVideo(submission.url, fileName)
                 }
@@ -116,12 +121,12 @@ private fun downloadMedia(user: String, submissions: Set<Submission>, parallel: 
                     )
                 )
 
-//                t.println(
-//                    if (result.isSuccess)
-//                        " ✅ ${bold(green("Success"))}"
-//                    else
-//                        " ❌ ${bold(red("Failure"))}"
-//                )
+                // Updating the animation
+                if (result.isSuccess) {
+                    anim.update(DownloadStatus.Success)
+                } else {
+                    anim.update(DownloadStatus.Failure)
+                }
             }
         }
 
@@ -140,7 +145,7 @@ private fun removeDuplicates(user: String, downloads: List<Download>, option: St
     downloads.forEach {
         val file = File("/tmp/rmd/$user", it.fileName)
         if (file.exists() && file.length() == 0L) {
-            t.println("[${brightBlue("Z")}] ${file.absoluteFile}")
+            t.println("[${TextColors.brightBlue("Z")}] ${file.absoluteFile}")
             file.delete()
         }
     }
@@ -150,7 +155,7 @@ private fun removeDuplicates(user: String, downloads: List<Download>, option: St
         it.drop(1).forEach { download ->
             val file = File("/tmp/rmd/$user", download.fileName)
             if (file.exists()) {
-                t.println("[${brightRed("D")}] ${file.absoluteFile}")
+                t.println("[${TextColors.brightRed("D")}] ${file.absoluteFile}")
                 file.delete()
             }
         }
@@ -165,7 +170,7 @@ private fun removeDuplicates(user: String, downloads: List<Download>, option: St
         it.drop(1).forEach { similar ->
             val file = File(similar)
             if (file.exists()) {
-                t.println("[${brightYellow("S")}] ${file.absoluteFile}")
+                t.println("[${TextColors.brightYellow("S")}] ${file.absoluteFile}")
                 file.delete()
             }
         }
@@ -196,20 +201,28 @@ private fun createReport(user: String, downloads: List<Download>) {
 }
 
 // region - Terminal
-fun printDownloading(index: Int, padding: Int, submission: Submission) {
+fun printAnimation(index: Int, padding: Int, submission: Submission): Animation<DownloadStatus> {
     val emoji: String
     val label: String
-    val number = (index + 1).toString().padStart(padding, '0')
-    val url = brightCyan(underline(submission.url.take(68)))
+    val number = t.colors.bold(t.colors.blue((index + 1).toString().padStart(padding, '0')))
+    val url = t.colors.underline(t.colors.brightCyan(submission.url.take(68)))
 
     if (submission.postHint == "image") {
         emoji = "📸"
-        label = magenta("image")
+        label = t.colors.magenta("image")
     } else {
         emoji = "📹"
-        label = yellow("video")
+        label = t.colors.yellow("video")
     }
 
-    t.println("$emoji [${blue(bold(number))}] Downloading $label $url ".padEnd(141, '.'))
+    val base = "$emoji [$number] Downloading $label $url ".padEnd(141, '.')
+
+    return t.textAnimation {
+        when (it) {
+            DownloadStatus.Downloading -> base
+            DownloadStatus.Success -> base + " ✅ ${t.colors.bold(t.colors.green("Success"))}"
+            DownloadStatus.Failure -> base + " ❌ ${t.colors.bold(t.colors.red("Failure"))}"
+        }
+    }
 }
 // endregion

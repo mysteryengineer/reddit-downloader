@@ -1,5 +1,6 @@
 package io.vinicius.rmd.util
 
+import com.github.ajalt.mordant.terminal.ExperimentalTerminalApi
 import com.github.ajalt.mordant.terminal.Terminal
 import java.io.File
 import java.io.IOException
@@ -8,10 +9,6 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 class Shell(private val directory: File, private val debug: Boolean = false) {
-    companion object {
-        val t = Terminal()
-    }
-
     init {
         if (!directory.exists()) directory.mkdirs()
     }
@@ -82,4 +79,9 @@ class Shell(private val directory: File, private val debug: Boolean = false) {
         return result
     }
     // endregion
+
+    companion object {
+        @OptIn(ExperimentalTerminalApi::class)
+        val t = Terminal()
+    }
 }

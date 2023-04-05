@@ -3,7 +3,8 @@ package io.vinicius.rmd.util
 import com.squareup.moshi.Moshi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
-import okhttp3.*
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
