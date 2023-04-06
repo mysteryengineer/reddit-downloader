@@ -100,7 +100,7 @@ private fun downloadMedia(user: String, submissions: Set<Submission>, parallel: 
                 val anim = printAnimation(index, padding, submission)
                 anim.update(DownloadStatus.Downloading)
 
-                val result = if (submission.postHint == "image") {
+                val result = if (getMediaType(submission) == MediaType.Image) {
                     fileName = "$baseFile-$number.jpg"
                     shell.downloadImage(submission.url, fileName)
                 } else {
@@ -134,6 +134,20 @@ private fun downloadMedia(user: String, submissions: Set<Submission>, parallel: 
     }
 
     return downloads
+}
+
+private fun getMediaType(submission: Submission): MediaType {
+    return if (submission.url.endsWith(".jpg") || submission.url.endsWith(".jpeg")) {
+        MediaType.Image
+    } else if (submission.url.endsWith(".png")) {
+        MediaType.Image
+    } else if (submission.url.endsWith(".gifv") || submission.url.endsWith(".mp4")) {
+        MediaType.Video
+    } else if (submission.postHint == "image") {
+        MediaType.Image
+    } else {
+        MediaType.Video
+    }
 }
 
 private fun removeDuplicates(user: String, downloads: List<Download>, option: String?) {
@@ -200,8 +214,7 @@ private fun createReport(user: String, downloads: List<Download>) {
     }
 }
 
-// region - Terminal
-fun printAnimation(index: Int, padding: Int, submission: Submission): Animation<DownloadStatus> {
+private fun printAnimation(index: Int, padding: Int, submission: Submission): Animation<DownloadStatus> {
     val emoji: String
     val label: String
     val number = t.colors.bold(t.colors.blue((index + 1).toString().padStart(padding, '0')))
@@ -225,4 +238,3 @@ fun printAnimation(index: Int, padding: Int, submission: Submission): Animation<
         }
     }
 }
-// endregion
