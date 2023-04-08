@@ -1,6 +1,7 @@
 package io.vinicius.rmd
 
 import com.github.ajalt.mordant.animation.Animation
+import com.github.ajalt.mordant.animation.progressAnimation
 import com.github.ajalt.mordant.animation.textAnimation
 import com.github.ajalt.mordant.rendering.TextColors
 import io.vinicius.rmd.model.Download
@@ -26,7 +27,6 @@ fun main(args: Array<String>) {
     val user: String? = System.getenv("RMD_USER")
     val limit: Int? = System.getenv("RMD_LIMIT")?.toInt()
     val parallel: Int = System.getenv("RMD_PARALLEL")?.toInt() ?: 5
-    val similar: String? = System.getenv("RMD_SIMILAR")?.uppercase()
 
     if (user == null || limit == null) {
         error("🧨 Missing the environment variable RMD_USER or RMD_LIMIT")
@@ -41,7 +41,7 @@ fun main(args: Array<String>) {
 
     val downloads = downloadMedia(user, submissions, parallel)
 
-    removeDuplicates(user, downloads, similar)
+    removeDuplicates(user, downloads)
     createReport(user, downloads)
 
     t.println("\n🌟 Done!")
@@ -70,8 +70,7 @@ private fun getSubmissions(user: String, limit: Int): Set<Submission> {
         }
     } while (list.isNotEmpty() && counter < ceil(limit / 1000f))
 
-    t.println(" ${min(submissions.size, limit)}/$limit unique posts found")
-    t.println()
+    t.println(" ${min(submissions.size, limit)}/$limit unique posts found\n")
 
     return submissions.take(limit).toSet()
 }
@@ -92,19 +91,28 @@ private fun downloadMedia(user: String, submissions: Set<Submission>, parallel: 
     val padding = submissions.size.toString().count()
     val parallelismContext = Dispatchers.IO.limitedParallelism(parallel)
 
+    val progress = t.progressAnimation {
+        text("Downloading")
+        percentage()
+        progressBar()
+        completed()
+        speed(" posts/sec")
+        timeRemaining()
+    }
+
+    progress.updateTotal(submissions.size.toLong())
+
     runBlocking {
         val jobs = submissions.mapIndexed { index, submission ->
             launch(parallelismContext) {
-                val fileName: String
                 val number = (index + 1).toString().padStart(padding, '0')
-                val anim = printAnimation(index, padding, submission)
-                anim.update(DownloadStatus.Downloading)
+                var fileName = "${submission.created}-$user-$number"
 
                 val result = if (getMediaType(submission) == MediaType.Image) {
-                    fileName = "$baseFile-$number.jpg"
+                    fileName += ".jpg"
                     shell.downloadImage(submission.url, fileName)
                 } else {
-                    fileName = "$baseFile-$number.mp4"
+                    fileName += ".mp4"
                     shell.downloadVideo(submission.url, fileName)
                 }
 
@@ -121,16 +129,14 @@ private fun downloadMedia(user: String, submissions: Set<Submission>, parallel: 
                     )
                 )
 
-                // Updating the animation
-                if (result.isSuccess) {
-                    anim.update(DownloadStatus.Success)
-                } else {
-                    anim.update(DownloadStatus.Failure)
-                }
+                progress.update(downloads.size)
             }
         }
 
+        progress.start()
         jobs.joinAll()
+        progress.update(submissions.size.toLong())
+        progress.stop()
     }
 
     return downloads
@@ -150,9 +156,8 @@ private fun getMediaType(submission: Submission): MediaType {
     }
 }
 
-private fun removeDuplicates(user: String, downloads: List<Download>, option: String?) {
+private fun removeDuplicates(user: String, downloads: List<Download>) {
     val shell = Shell(File("/tmp/rmd/$user"))
-
     t.println("\n🚮 Removing duplicated downloads...")
 
     // Removing 0-byte files
@@ -170,21 +175,6 @@ private fun removeDuplicates(user: String, downloads: List<Download>, option: St
             val file = File("/tmp/rmd/$user", download.fileName)
             if (file.exists()) {
                 t.println("[${TextColors.brightRed("D")}] ${file.absoluteFile}")
-                file.delete()
-            }
-        }
-    }
-
-    // Removing similar
-    val similarImages = if(option == "I" || option == "A") shell.findSimilar("image") else emptyList()
-    val similarVideos = if(option == "V" || option == "A") shell.findSimilar("video") else emptyList()
-    val similars = similarImages + similarVideos
-
-    similars.forEach {
-        it.drop(1).forEach { similar ->
-            val file = File(similar)
-            if (file.exists()) {
-                t.println("[${TextColors.brightYellow("S")}] ${file.absoluteFile}")
                 file.delete()
             }
         }
