@@ -17,7 +17,9 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import kotlin.math.ceil
 import kotlin.math.min
@@ -70,9 +72,10 @@ private fun getSubmissions(user: String, limit: Int): Set<Submission> {
         }
     } while (list.isNotEmpty() && counter < ceil(limit / 1000f))
 
-    t.println(" ${min(submissions.size, limit)}/$limit unique posts found\n")
+    val authorFiltered = submissions.filter { it.author == user }
+    t.println(" ${min(authorFiltered.size, limit)}/$limit unique posts found\n")
 
-    return submissions.take(limit).toSet()
+    return authorFiltered.take(limit).toSet()
 }
 
 private fun createUrl(user: String, until: Long): String {
@@ -87,7 +90,6 @@ private fun downloadMedia(user: String, submissions: Set<Submission>, parallel: 
     val downloads = mutableListOf<Download>()
     val shell = Shell(File("/tmp/rmd/$user"))
     val formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")
-    val baseFile = "${OffsetDateTime.now().format(formatter)}-$user"
     val padding = submissions.size.toString().count()
     val parallelismContext = Dispatchers.IO.limitedParallelism(parallel)
 
@@ -105,8 +107,9 @@ private fun downloadMedia(user: String, submissions: Set<Submission>, parallel: 
     runBlocking {
         val jobs = submissions.mapIndexed { index, submission ->
             launch(parallelismContext) {
+                val dateTime = LocalDateTime.ofEpochSecond(submission.created, 0, ZoneOffset.UTC)
                 val number = (index + 1).toString().padStart(padding, '0')
-                var fileName = "${submission.created}-$user-$number"
+                var fileName = "${formatter.format(dateTime)}-$user-$number"
 
                 val result = if (getMediaType(submission) == MediaType.Image) {
                     fileName += ".jpg"
@@ -157,7 +160,6 @@ private fun getMediaType(submission: Submission): MediaType {
 }
 
 private fun removeDuplicates(user: String, downloads: List<Download>) {
-    val shell = Shell(File("/tmp/rmd/$user"))
     t.println("\n🚮 Removing duplicated downloads...")
 
     // Removing 0-byte files
@@ -184,7 +186,7 @@ private fun removeDuplicates(user: String, downloads: List<Download>) {
 private fun createReport(user: String, downloads: List<Download>) {
     val totalFailed = downloads.count { !it.isSuccess }
 
-    File("/tmp/rmd/$user", "report.md").printWriter().use { out ->
+    File("/tmp/rmd/$user", "_report.md").printWriter().use { out ->
         out.println("# RMD - Download Report")
 
         out.println("## Failed Downloads")
