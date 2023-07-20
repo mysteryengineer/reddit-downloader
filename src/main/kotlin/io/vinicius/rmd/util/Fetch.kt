@@ -1,6 +1,7 @@
 package io.vinicius.rmd.util
 
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import okhttp3.OkHttpClient
@@ -9,7 +10,10 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 class Fetch {
-    val moshi = Moshi.Builder().build()
+    val moshi = Moshi.Builder()
+        .addLast(KotlinJsonAdapterFactory())
+        .build()
+
     val client = OkHttpClient.Builder()
         .connectTimeout(1, TimeUnit.MINUTES)
         .build()

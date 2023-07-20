@@ -18,7 +18,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import kotlin.math.ceil
@@ -38,7 +37,7 @@ fun main(args: Array<String>) {
         getSubmissions(user, limit)
     } catch (ex: Exception) {
         error("\n🧨 Error fetching the posts; check if the servers are up by accessing the site " +
-                "https://stats.uptimerobot.com/l8RZDu1gBG")
+                "https://www.redditstatus.com")
     }
 
     val downloads = downloadMedia(user, submissions, parallel)
@@ -52,37 +51,35 @@ fun main(args: Array<String>) {
 private fun getSubmissions(user: String, limit: Int): Set<Submission> {
     val fetch = Fetch()
     val submissions = mutableSetOf<Submission>()
-    var before = OffsetDateTime.now().toEpochSecond()
+    var after: String? = null
     var counter = 0
 
     print("\n📝 Collecting ${t.colors.bold(limit.toString())} posts from user ${t.colors.bold(user)} ")
 
     do {
-        val url = createUrl(user, before)
-        val list = fetch.get<Response>(url).data
+        val url = createUrl(user, after ?: "")
+        val response = fetch.get<Response>(url).data
+        val list = response.children
         submissions.addAll(list)
 
         // Getting the last "before"
-        before = list.lastOrNull()?.created ?: 0
+        after = response.after
         counter++
 
         runBlocking {
             t.print(".")
             delay(2.seconds)
         }
-    } while (list.isNotEmpty() && counter < ceil(limit / 1000f))
+    } while (list.isNotEmpty() && counter < ceil(limit / 100f) && after != null)
 
-    val authorFiltered = submissions.filter { it.author == user }
-    t.println(" ${min(authorFiltered.size, limit)}/$limit unique posts found\n")
+    t.println(" ${min(submissions.size, limit)}/$limit unique posts found\n")
 
-    return authorFiltered.take(limit).toSet()
+    return submissions.take(limit).toSet()
 }
 
-private fun createUrl(user: String, until: Long): String {
-    // Docs: https://api.pushshift.io/docs
-    val baseUrl = "https://api.pushshift.io/reddit/submission/search"
-    val filter = "author,created_utc,domain,post_hint,url"
-    return "${baseUrl}?author=${user}&filter=${filter}&until=${until}&limit=1000"
+private fun createUrl(user: String, after: String): String {
+    val baseUrl = "https://www.reddit.com/user/${user}/submitted.json"
+    return "${baseUrl}?limit=100&sort=new&after=${after}&raw_json=1"
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -107,16 +104,17 @@ private fun downloadMedia(user: String, submissions: Set<Submission>, parallel: 
     runBlocking {
         val jobs = submissions.mapIndexed { index, submission ->
             launch(parallelismContext) {
-                val dateTime = LocalDateTime.ofEpochSecond(submission.created, 0, ZoneOffset.UTC)
+                val dateTime = LocalDateTime.ofEpochSecond(submission.data.created, 0, ZoneOffset.UTC)
                 val number = (index + 1).toString().padStart(padding, '0')
                 var fileName = "${formatter.format(dateTime)}-$user-$number"
 
                 val result = if (getMediaType(submission) == MediaType.Image) {
-                    fileName += ".jpg"
-                    shell.downloadImage(submission.url, fileName)
+                    val extension = getFileExtension(submission.data.url) ?: "jpg"
+                    fileName += ".$extension"
+                    shell.downloadImage(submission.data.url, fileName)
                 } else {
                     fileName += ".mp4"
-                    shell.downloadVideo(submission.url, fileName)
+                    shell.downloadVideo(submission.data.url, fileName)
                 }
 
                 // Add to list of downloads
@@ -124,7 +122,7 @@ private fun downloadMedia(user: String, submissions: Set<Submission>, parallel: 
 
                 downloads.add(
                     Download(
-                        url = submission.url,
+                        url = submission.data.url,
                         fileName = fileName,
                         output = result.getOrNull() ?: result.exceptionOrNull()?.message ?: "<Nothing>",
                         isSuccess = result.isSuccess,
@@ -145,14 +143,23 @@ private fun downloadMedia(user: String, submissions: Set<Submission>, parallel: 
     return downloads
 }
 
+fun getFileExtension(fileName: String): String? {
+    val lastDotIndex = fileName.lastIndexOf('.')
+    return if (lastDotIndex >= 0 && lastDotIndex < fileName.length - 1) {
+        fileName.substring(lastDotIndex + 1)
+    } else {
+        null
+    }
+}
+
 private fun getMediaType(submission: Submission): MediaType {
-    return if (submission.url.endsWith(".jpg") || submission.url.endsWith(".jpeg")) {
+    return if (submission.data.url.endsWith(".jpg") || submission.data.url.endsWith(".jpeg")) {
         MediaType.Image
-    } else if (submission.url.endsWith(".png")) {
+    } else if (submission.data.url.endsWith(".png")) {
         MediaType.Image
-    } else if (submission.url.endsWith(".gifv") || submission.url.endsWith(".mp4")) {
+    } else if (submission.data.url.endsWith(".gifv") || submission.data.url.endsWith(".mp4")) {
         MediaType.Video
-    } else if (submission.postHint == "image") {
+    } else if (submission.data.postHint == "image") {
         MediaType.Image
     } else {
         MediaType.Video
@@ -210,9 +217,9 @@ private fun printAnimation(index: Int, padding: Int, submission: Submission): An
     val emoji: String
     val label: String
     val number = t.colors.bold(t.colors.blue((index + 1).toString().padStart(padding, '0')))
-    val url = t.colors.underline(t.colors.brightCyan(submission.url.take(68)))
+    val url = t.colors.underline(t.colors.brightCyan(submission.data.url.take(68)))
 
-    if (submission.postHint == "image") {
+    if (submission.data.postHint == "image") {
         emoji = "📸"
         label = t.colors.magenta("image")
     } else {

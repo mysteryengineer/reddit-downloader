@@ -1,6 +1,10 @@
 package io.vinicius.rmd.model
 
-import com.squareup.moshi.JsonClass
-
-@JsonClass(generateAdapter = true)
-data class Response(val data: List<Submission>)
+data class Response(
+    val data: Data
+) {
+    data class Data(
+        val after: String?,
+        val children: List<Submission>
+    )
+}

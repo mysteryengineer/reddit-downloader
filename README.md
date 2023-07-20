@@ -2,6 +2,8 @@
 
 Download all the picture/video posts from a particular user on Reddit, for uh... reasons. Automatically removes duplicates.
 
+**✨ Works with new Reddit API restrictions of July 1st 2023!**
+
 ## 🖼️ Usage
 
 Install Docker in your computer and run the command below:

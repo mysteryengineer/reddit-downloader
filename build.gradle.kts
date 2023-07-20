@@ -20,10 +20,7 @@ dependencies {
     // Others
     implementation("com.github.ajalt.mordant:mordant:2.0.0-beta8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-
-    // Moshi
     implementation("com.squareup.moshi:moshi-kotlin:1.14.0")
-    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.14.0")
 
     // OkHttp
     implementation(platform("com.squareup.okhttp3:okhttp-bom:4.10.0"))
