@@ -1,12 +1,5 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-
 plugins {
-    kotlin("jvm") version "1.7.20"
-    id("com.google.devtools.ksp") version "1.7.20-1.0.8"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
-    application
+    kotlin("multiplatform") version "1.9.0"
 }
 
 group = "io.vinicius"
@@ -16,28 +9,32 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    // Others
-    implementation("com.github.ajalt.mordant:mordant:2.0.0-beta8")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    implementation("com.squareup.moshi:moshi-kotlin:1.14.0")
+kotlin {
+    val hostOs = System.getProperty("os.name")
+    val arch = System.getProperty("os.arch")
+    val isMingwX64 = hostOs.startsWith("Windows")
+    val nativeTarget = when {
+        hostOs == "Mac OS X" -> {
+            if (arch.contains("aarch64")) {
+                macosArm64("native")
+            } else {
+                macosX64("native")
+            }
+        }
+        hostOs == "Linux" -> linuxX64("native")
+        isMingwX64 -> mingwX64("native")
+        else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
+    }
 
-    // OkHttp
-    implementation(platform("com.squareup.okhttp3:okhttp-bom:4.10.0"))
-    implementation("com.squareup.okhttp3:okhttp")
-}
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
-}
-
-application {
-    mainClass.set("io.vinicius.rmd.MainKt")
-}
-
-tasks.register<Exec>("docker") {
-    val calver = LocalDate.now().format(DateTimeFormatter.ofPattern("uu.M.d"))
-    workingDir(".")
-    executable("docker")
-    args("build", "-t", "vegidio/rmd", ".", "--build-arg", "VERSION=$calver")
+    nativeTarget.apply {
+        binaries {
+            executable {
+                entryPoint = "io.vinicius.rmd.main"
+            }
+        }
+    }
+    sourceSets {
+        val nativeMain by getting
+        val nativeTest by getting
+    }
 }
