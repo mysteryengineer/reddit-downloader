@@ -11,6 +11,8 @@ repositories {
 }
 
 dependencies {
+    commonMainImplementation("com.soywiz.korlibs.klock:klock:4.0.2")
+    commonMainImplementation("com.squareup.okio:okio:3.4.0")
     commonMainImplementation("io.ktor:ktor-client-content-negotiation:2.3.2")
     commonMainImplementation("io.ktor:ktor-client-core:2.3.2")
     commonMainImplementation("io.ktor:ktor-client-curl:2.3.2")

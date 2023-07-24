@@ -25,8 +25,7 @@ class Fetch {
         return client.use {
             runBlocking {
                 val response = it.get(url)
-                val content = response.body<T>()
-                return@runBlocking content
+                return@runBlocking response.body<T>()
             }
         }
     }
