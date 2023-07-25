@@ -1,10 +1,15 @@
 package io.vinicius.rmd
 
+import com.github.ajalt.mordant.animation.Animation
+import com.github.ajalt.mordant.animation.textAnimation
+import com.github.ajalt.mordant.rendering.TextColors
+import com.github.ajalt.mordant.rendering.TextStyles
 import io.vinicius.rmd.model.Download
 import io.vinicius.rmd.model.Response
 import io.vinicius.rmd.model.Submission
 import io.vinicius.rmd.util.Fetch
 import io.vinicius.rmd.util.Shell
+import io.vinicius.rmd.util.Shell.Companion.t
 import korlibs.time.DateFormat
 import korlibs.time.DateTimeTz
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -16,6 +21,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import okio.FileSystem
 import okio.Path.Companion.toPath
 import platform.posix.getenv
 import kotlin.math.ceil
@@ -25,11 +31,11 @@ import kotlin.time.Duration.Companion.seconds
 @OptIn(ExperimentalForeignApi::class)
 fun main() {
     val user: String? = getenv("RMD_USER")?.toKString()
-    val limit: Int? = getenv("RMD_LIMIT")?.toKString()?.toInt()
-    val parallel: Int = getenv("RMD_PARALLEL")?.toKString()?.toInt() ?: 1
+    val limit: Int = getenv("RMD_LIMIT")?.toKString()?.toInt() ?: 1000
+    val parallel: Int = getenv("RMD_PARALLEL")?.toKString()?.toInt() ?: 5
 
-    if (user == null || limit == null) {
-        error("🧨 Missing the environment variable RMD_USER or RMD_LIMIT")
+    if (user == null) {
+        error("🧨 Missing the environment variable RMD_USER")
     }
 
     val submissions = try {
@@ -40,7 +46,11 @@ fun main() {
     }
 
     val downloads = downloadMedia(user, submissions, parallel)
-    println(downloads)
+
+    removeDuplicates(user, downloads)
+    createReport(user, downloads)
+
+    t.println("\n🌟 Done!")
 }
 
 private fun getSubmissions(user: String, limit: Int): Set<Submission> {
@@ -49,7 +59,7 @@ private fun getSubmissions(user: String, limit: Int): Set<Submission> {
     var after: String? = null
     var counter = 0
 
-    print("\n📝 Collecting $limit posts from user $user ")
+    t.print("\n📝 Collecting ${TextStyles.bold(limit.toString())} posts from user ${TextStyles.bold(user)} ")
 
     do {
         val url = createUrl(user, after ?: "")
@@ -62,12 +72,13 @@ private fun getSubmissions(user: String, limit: Int): Set<Submission> {
         counter++
 
         runBlocking {
-            print(".")
+            t.print(".")
             delay(2.seconds)
         }
     } while (list.isNotEmpty() && counter < ceil(limit / 100f) && after != null)
 
-    println(" ${min(submissions.size, limit)}/$limit unique posts found\n")
+    t.println(" ${min(submissions.size, limit)}/$limit unique posts found\n")
+    t.println()
 
     return submissions.take(limit).toSet()
 }
@@ -79,7 +90,6 @@ private fun createUrl(user: String, after: String): String {
 
 @OptIn(ExperimentalCoroutinesApi::class)
 private fun downloadMedia(user: String, submissions: Set<Submission>, parallel: Int): List<Download> {
-
     val downloads = mutableListOf<Download>()
     val shell = Shell("/tmp/rmd/$user".toPath())
     val formatter = DateFormat("yyyyMMdd-HHmmss")
@@ -93,7 +103,8 @@ private fun downloadMedia(user: String, submissions: Set<Submission>, parallel: 
                 val number = (index + 1).toString().padStart(padding, '0')
                 var fileName = "${formatter.format(dateTime)}-$user-$number"
 
-                printStatus(index, padding, submission)
+                val anim = printAnimation(index, padding, submission)
+                anim.update(DownloadStatus.Downloading)
 
                 val result = if (getMediaType(submission) == MediaType.Image) {
                     val extension = getFileExtension(submission.data.url) ?: "jpg"
@@ -116,6 +127,13 @@ private fun downloadMedia(user: String, submissions: Set<Submission>, parallel: 
                         hash = hash
                     )
                 )
+
+                // Updating the animation
+                if (result.isSuccess) {
+                    anim.update(DownloadStatus.Success)
+                } else {
+                    anim.update(DownloadStatus.Failure)
+                }
             }
         }
 
@@ -148,19 +166,67 @@ private fun getMediaType(submission: Submission): MediaType {
     }
 }
 
-private fun printStatus(index: Int, padding: Int, submission: Submission) {
+private fun removeDuplicates(user: String, downloads: List<Download>) {
+    val fs = FileSystem.SYSTEM
+    t.println("\n🚮 Removing duplicated downloads...")
+
+    // Removing duplicates
+    downloads.groupBy { it.hash }.values.forEach {
+        it.drop(1).forEach { download ->
+            val file = "/tmp/rmd/$user".toPath().resolve(download.fileName)
+            if (fs.exists(file)) {
+                t.println("[${TextColors.brightRed("D")}] $file")
+                fs.delete(file)
+            }
+        }
+    }
+}
+
+private fun createReport(user: String, downloads: List<Download>) {
+    val fs = FileSystem.SYSTEM
+    val totalFailed = downloads.count { !it.isSuccess }
+    val report = "/tmp/rmd/$user".toPath().resolve("_report.md")
+
+    fs.write(report) {
+        writeUtf8("# RMD - Download Report\n")
+        writeUtf8("## Failed Downloads\n")
+        writeUtf8("- Total: $totalFailed\n")
+
+        downloads
+            .filter { !it.isSuccess }
+            .forEach {
+                writeUtf8("### 🔗 Link: ${it.url} - ❌ **Failure**\n")
+                writeUtf8("### 📝 Output:\n")
+                writeUtf8("```\n")
+                writeUtf8("${it.output}\n")
+                writeUtf8("```\n")
+
+                writeUtf8("---\n")
+            }
+    }
+}
+
+private fun printAnimation(index: Int, padding: Int, submission: Submission): Animation<DownloadStatus> {
     val emoji: String
     val label: String
-    val number = "${index + 1}".padStart(padding, '0')
-    val url = submission.data.url.take(68)
+    val number = TextStyles.bold(TextColors.blue((index + 1).toString().padStart(padding, '0')))
+    val url = TextStyles.underline(TextColors.brightCyan(submission.data.url.take(68)))
 
     if (submission.data.postHint == "image") {
         emoji = "📸"
-        label = "image"
+        label = TextColors.magenta("image")
     } else {
         emoji = "📹"
-        label = "video"
+        label = TextColors.yellow("video")
     }
 
-    println("$emoji [$number] Downloading $label $url ".padEnd(100, '.'))
+    val base = "$emoji [$number] Downloading $label $url ".padEnd(141, '.')
+
+    return t.textAnimation {
+        when (it) {
+            DownloadStatus.Downloading -> base
+            DownloadStatus.Success -> base + " ✅ ${TextStyles.bold(TextColors.green("Success"))}"
+            DownloadStatus.Failure -> base + " ❌ ${TextStyles.bold(TextColors.red("Failure"))}"
+        }
+    }
 }

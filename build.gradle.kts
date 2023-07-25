@@ -11,6 +11,7 @@ repositories {
 }
 
 dependencies {
+    commonMainImplementation("com.github.ajalt.mordant:mordant:2.0.1")
     commonMainImplementation("com.soywiz.korlibs.klock:klock:4.0.2")
     commonMainImplementation("com.squareup.okio:okio:3.4.0")
     commonMainImplementation("io.ktor:ktor-client-content-negotiation:2.3.2")

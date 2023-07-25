@@ -1,5 +1,6 @@
 package io.vinicius.rmd.util
 
+import com.github.ajalt.mordant.terminal.Terminal
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.refTo
 import kotlinx.cinterop.toKString
@@ -37,7 +38,7 @@ class Shell(private val directory: Path, private val debug: Boolean = false) {
         }
     }
 
-    fun runCommand(command: String): Result<String> {
+    private fun runCommand(command: String): Result<String> {
         val fp = popen("$command 2>&1", "r") ?: throw Error("Failed to run command: $command")
 
         val stdout = buildString {
@@ -47,14 +48,18 @@ class Shell(private val directory: Path, private val debug: Boolean = false) {
                 if (input.isNullOrEmpty()) break
                 append(input)
             }
-        }
+        }.trim()
 
         val status = pclose(fp)
 
         return if (status == 0) {
             Result.success(stdout)
         } else {
-            Result.failure(Error("Error executing command: $command. Exit code: $status"))
+            Result.failure(Error(stdout))
         }
+    }
+
+    companion object {
+        val t = Terminal()
     }
 }
