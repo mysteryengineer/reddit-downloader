@@ -4,11 +4,12 @@ on:
   push:
     branches:
       - main
+      - kotlin-native
   schedule:
     - cron: '0 0 1 * *' # For more: https://crontab.guru
 
 env:
-  IMAGE_NAME: vegidio/rmd
+  IMAGE_NAME: vegidio/rmd2
 
 jobs:
   build:
