@@ -4,6 +4,7 @@ import com.github.ajalt.mordant.animation.Animation
 import com.github.ajalt.mordant.animation.progressAnimation
 import com.github.ajalt.mordant.animation.textAnimation
 import com.github.ajalt.mordant.rendering.TextColors
+import com.github.ajalt.mordant.rendering.TextStyles
 import io.vinicius.rmd.model.Download
 import io.vinicius.rmd.model.Response
 import io.vinicius.rmd.model.Submission
@@ -25,17 +26,18 @@ import kotlin.math.min
 import kotlin.time.Duration.Companion.seconds
 
 fun main(args: Array<String>) {
-    val user: String? = System.getenv("RMD_USER")
-    val limit: Int? = System.getenv("RMD_LIMIT")?.toInt()
-    val parallel: Int = System.getenv("RMD_PARALLEL")?.toInt() ?: 5
+    val user = System.getenv("RMD_USER")
+    val limit = System.getenv("RMD_LIMIT")?.toInt() ?: 1000
+    val parallel = System.getenv("RMD_PARALLEL")?.toInt() ?: 5
+    val convert = System.getenv("RMD_CONVERT_GIFS")?.toBoolean() ?: true
 
-    if (user == null || limit == null) {
-        error("🧨 Missing the environment variable RMD_USER or RMD_LIMIT")
+    if (user == null) {
+        error("🧨 Missing the environment variable RMD_USER")
     }
 
     val submissions = try {
         getSubmissions(user, limit)
-    } catch (ex: Exception) {
+    } catch (_: Exception) {
         error("\n🧨 Error fetching the posts; check if the servers are up by accessing the site " +
                 "https://www.redditstatus.com")
     }
@@ -43,7 +45,10 @@ fun main(args: Array<String>) {
     val downloads = downloadMedia(user, submissions, parallel)
 
     removeDuplicates(user, downloads)
+
     createReport(user, downloads)
+
+    if (convert) convertGifs(user, downloads)
 
     t.println("\n🌟 Done!")
 }
@@ -54,7 +59,7 @@ private fun getSubmissions(user: String, limit: Int): Set<Submission> {
     var after: String? = null
     var counter = 0
 
-    print("\n📝 Collecting ${t.colors.bold(limit.toString())} posts from user ${t.colors.bold(user)} ")
+    print("\n📝 Collecting ${TextStyles.bold(limit.toString())} posts from user ${TextStyles.bold(user)} ")
 
     do {
         val url = createUrl(user, after ?: "")
@@ -190,6 +195,28 @@ private fun removeDuplicates(user: String, downloads: List<Download>) {
     }
 }
 
+private fun convertGifs(user: String, downloads: List<Download>) {
+    t.println("\n⚙️ Converting gifs to videos...")
+    val shell = Shell(File("/tmp/rmd/$user"))
+
+    val gifs = downloads
+        .filter { it.isSuccess }
+        .filter { it.fileName.endsWith(".gif") }
+
+    gifs.forEach {
+        val gifFile = File("/tmp/rmd/$user", it.fileName)
+        val baseFile = gifFile.parent + File.separator + gifFile.nameWithoutExtension
+
+        if (gifFile.exists()) {
+            t.println("[${TextColors.green("C")}] Converting ${gifFile.absolutePath} to video...")
+            shell.convertGif(baseFile)
+
+            val mp4File = File("$baseFile.mp4")
+            if (mp4File.exists()) gifFile.delete()
+        }
+    }
+}
+
 private fun createReport(user: String, downloads: List<Download>) {
     val totalFailed = downloads.count { !it.isSuccess }
 
@@ -213,18 +240,22 @@ private fun createReport(user: String, downloads: List<Download>) {
     }
 }
 
+private fun printMostRecent(submissions: List<Submission?>) {
+    // TODO Implement download UI update
+}
+
 private fun printAnimation(index: Int, padding: Int, submission: Submission): Animation<DownloadStatus> {
     val emoji: String
     val label: String
-    val number = t.colors.bold(t.colors.blue((index + 1).toString().padStart(padding, '0')))
-    val url = t.colors.underline(t.colors.brightCyan(submission.data.url.take(68)))
+    val number = TextStyles.bold(TextColors.blue((index + 1).toString().padStart(padding, '0')))
+    val url = TextStyles.underline(TextColors.brightCyan(submission.data.url.take(68)))
 
     if (submission.data.postHint == "image") {
         emoji = "📸"
-        label = t.colors.magenta("image")
+        label = TextColors.magenta("image")
     } else {
         emoji = "📹"
-        label = t.colors.yellow("video")
+        label = TextColors.yellow("video")
     }
 
     val base = "$emoji [$number] Downloading $label $url ".padEnd(141, '.')
@@ -232,8 +263,8 @@ private fun printAnimation(index: Int, padding: Int, submission: Submission): An
     return t.textAnimation {
         when (it) {
             DownloadStatus.Downloading -> base
-            DownloadStatus.Success -> base + " ✅ ${t.colors.bold(t.colors.green("Success"))}"
-            DownloadStatus.Failure -> base + " ❌ ${t.colors.bold(t.colors.red("Failure"))}"
+            DownloadStatus.Success -> base + " ✅ ${TextStyles.bold(TextColors.green("Success"))}"
+            DownloadStatus.Failure -> base + " ❌ ${TextStyles.bold(TextColors.red("Failure"))}"
         }
     }
 }

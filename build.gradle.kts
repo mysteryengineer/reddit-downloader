@@ -3,9 +3,8 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 plugins {
-    kotlin("jvm") version "1.7.20"
-    id("com.google.devtools.ksp") version "1.7.20-1.0.8"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.shadow)
     application
 }
 
@@ -18,13 +17,13 @@ repositories {
 
 dependencies {
     // Others
-    implementation("com.github.ajalt.mordant:mordant:2.0.0-beta8")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    implementation("com.squareup.moshi:moshi-kotlin:1.14.0")
+    implementation(libs.mordant)
+    implementation(libs.coroutines.core)
+    implementation(libs.moshi)
 
     // OkHttp
-    implementation(platform("com.squareup.okhttp3:okhttp-bom:4.10.0"))
-    implementation("com.squareup.okhttp3:okhttp")
+    implementation(platform(libs.okhttp.bom))
+    implementation(libs.okhttp)
 }
 
 tasks.withType<KotlinCompile> {

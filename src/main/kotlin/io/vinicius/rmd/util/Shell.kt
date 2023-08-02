@@ -33,15 +33,9 @@ class Shell(private val directory: File, private val debug: Boolean = false) {
         }
     }
 
-    fun findSimilar(type: String): List<List<String>> {
-        val result = runCommand("czkawka $type -d ${directory.absolutePath}").getOrNull()
-
-        return result?.split("\n\n")?.drop(1)?.map { group ->
-            group.split("\n").drop(1)
-                .map { data ->
-                    data.split(" - ").first()
-                }
-        } ?: emptyList()
+    fun convertGif(baseName: String) {
+        runCommand("ffmpeg -i $baseName.gif -movflags faststart -pix_fmt yuv420p "+
+            "-vf scale=trunc(iw/2)*2:trunc(ih/2)*2 $baseName.mp4")
     }
 
     // region - Private methods
