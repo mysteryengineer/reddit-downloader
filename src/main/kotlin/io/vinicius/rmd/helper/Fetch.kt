@@ -1,4 +1,4 @@
-package io.vinicius.rmd.util
+package io.vinicius.rmd.helper
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory

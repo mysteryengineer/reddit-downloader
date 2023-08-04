@@ -1,4 +1,4 @@
-package io.vinicius.rmd
+package io.vinicius.rmd.type
 
 enum class DownloadStatus {
     Downloading,

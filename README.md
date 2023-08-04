@@ -27,7 +27,7 @@ Where:
 
 ## 🎥 Demo
 
-[![asciicast](https://asciinema.org/a/uOqc8SeZehXVUAJBDx1Senf1x.svg)](https://asciinema.org/a/uOqc8SeZehXVUAJBDx1Senf1x)
+[![asciicast](https://asciinema.org/a/RSDb5W85jgF51Z4fx0jjd4avE.svg)](https://asciinema.org/a/RSDb5W85jgF51Z4fx0jjd4avE)
 
 ## 💡 Identical Files
 

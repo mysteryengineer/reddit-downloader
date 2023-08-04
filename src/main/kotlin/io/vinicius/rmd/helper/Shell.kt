@@ -1,4 +1,4 @@
-package io.vinicius.rmd.util
+package io.vinicius.rmd.helper
 
 import com.github.ajalt.mordant.terminal.ExperimentalTerminalApi
 import com.github.ajalt.mordant.terminal.Terminal
