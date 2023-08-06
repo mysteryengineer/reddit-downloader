@@ -48,7 +48,7 @@ fun downloadMedia(user: String, submissions: Set<Submission>, parallel: Int): Li
                 val number = (index + 1).toString().padStart(padding, '0')
                 var fileName = "${formatter.format(dateTime)}-$user-$number"
 
-                val result = if (getMediaType(submission) == MediaType.Image) {
+                val result = if (submission.data.type == MediaType.Image) {
                     val extension = getFileExtension(submission.data.url) ?: "jpg"
                     fileName += ".$extension"
                     shell.downloadImage(submission.data.url, fileName)
@@ -108,24 +108,50 @@ fun removeDuplicates(user: String, downloads: List<Download>) {
     }
 }
 
-fun convertGifs(user: String, downloads: List<Download>) {
-    t.println("\n⚙️ Converting gifs to videos...")
+fun convertImages(user: String, downloads: List<Download>) {
     val shell = Shell(File("/tmp/rmd/$user"))
 
-    val gifs = downloads
+    val images = downloads
         .filter { it.isSuccess }
-        .filter { it.fileName.endsWith(".gif") }
+        .filter { it.fileName.endsWith(".jpg") || it.fileName.endsWith(".jpeg") || it.fileName.endsWith(".png")}
 
-    gifs.forEach {
-        val gifFile = File("/tmp/rmd/$user", it.fileName)
-        val baseFile = gifFile.parent + File.separator + gifFile.nameWithoutExtension
+    if (images.isNotEmpty()) t.println("\n⚙️ Converting images to WebP...")
 
-        if (gifFile.exists()) {
-            t.println("[${TextColors.green("C")}] Converting ${gifFile.absolutePath} to video...")
-            shell.convertGif(baseFile)
+    images.forEach {
+        val oldFile = File("/tmp/rmd/$user", it.fileName)
+        val oldExtension = ".${oldFile.extension}"
+        val newFile = File("/tmp/rmd/$user", it.fileName.replace(oldExtension, ".webp"))
 
-            val mp4File = File("$baseFile.mp4")
-            if (mp4File.exists()) gifFile.delete()
+        if (oldFile.exists()) {
+            t.println("[${TextColors.green("C")}] Converting ${oldFile.absolutePath} to WebP...")
+            shell.convertToWebp(oldFile.absolutePath, newFile.absolutePath)
+
+            // If the file was converted successfully, then we delete the original file
+            if (newFile.exists()) oldFile.delete()
+        }
+    }
+}
+
+fun convertVideos(user: String, downloads: List<Download>) {
+    val shell = Shell(File("/tmp/rmd/$user"))
+
+    val videos = downloads
+        .filter { it.isSuccess }
+        .filter { it.fileName.endsWith(".gif") || it.fileName.endsWith(".mp4") }
+
+    if (videos.isNotEmpty()) t.println("\n⚙️ Converting videos to WebM...")
+
+    videos.forEach {
+        val oldFile = File("/tmp/rmd/$user", it.fileName)
+        val oldExtension = ".${oldFile.extension}"
+        val newFile = File("/tmp/rmd/$user", it.fileName.replace(oldExtension, ".webm"))
+
+        if (oldFile.exists()) {
+            t.println("[${TextColors.green("C")}] Converting ${oldFile.absolutePath} to WebM...")
+            shell.convertToWebm(oldFile.absolutePath, newFile.absolutePath)
+
+            // If the file was converted successfully, then we delete the original file
+            if (newFile.exists()) oldFile.delete()
         }
     }
 }

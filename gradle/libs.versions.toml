@@ -4,7 +4,7 @@ kotlin = "1.9.0"
 mordant = "2.1.0"
 moshi = "1.14.0"
 okhttp = "4.10.0"
-shadow = "7.1.2"
+shadow = "8.1.1"
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

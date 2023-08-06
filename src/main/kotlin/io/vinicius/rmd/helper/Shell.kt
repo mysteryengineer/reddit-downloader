@@ -33,9 +33,17 @@ class Shell(private val directory: File, private val debug: Boolean = false) {
         }
     }
 
-    fun convertGif(baseName: String) {
-        runCommand("ffmpeg -i $baseName.gif -movflags faststart -pix_fmt yuv420p "+
-            "-vf scale=trunc(iw/2)*2:trunc(ih/2)*2 $baseName.mp4")
+    fun convertToWebp(oldFile: String, newFile: String) {
+        runCommand("cwebp $oldFile -o $newFile")
+    }
+
+    fun convertToWebm(oldFile: String, newFile: String) {
+        if (oldFile.endsWith(".gif", true)) {
+            runCommand("ffmpeg -i $oldFile -movflags faststart -pix_fmt yuv420p " +
+                "-vf scale=trunc(iw/2)*2:trunc(ih/2)*2 $newFile")
+        } else {
+            runCommand("ffmpeg -i $oldFile $newFile")
+        }
     }
 
     // region - Private methods

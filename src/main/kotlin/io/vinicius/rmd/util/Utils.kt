@@ -22,22 +22,6 @@ fun getFileExtension(fileName: String): String? {
     }
 }
 
-fun getMediaType(submission: Submission): MediaType {
-    return if (submission.data.url.endsWith(".jpg") || submission.data.url.endsWith(".jpeg")) {
-        MediaType.Image
-    } else if (submission.data.url.endsWith(".png")) {
-        MediaType.Image
-    } else if (submission.data.url.endsWith(".gifv") || submission.data.url.endsWith(".mp4")) {
-        MediaType.Video
-    } else if (submission.data.url.endsWith(".gif")) {
-        MediaType.Image
-    } else if (submission.data.postHint == "image") {
-        MediaType.Image
-    } else {
-        MediaType.Video
-    }
-}
-
 fun printMostRecent(padding: Int): Animation<List<Pair<Int, Submission>>> {
     return t.textAnimation { list ->
         list.joinToString("\n", "\n") { (index, submission) ->
@@ -52,7 +36,7 @@ private fun downloadInfo(index: Int, padding: Int, submission: Submission): Stri
     val number = TextStyles.bold(TextColors.blue((index + 1).toString().padStart(padding, '0')))
     val url = TextStyles.underline(TextColors.brightCyan(submission.data.url.take(68)))
 
-    if (submission.data.postHint == "image") {
+    if (submission.data.type == MediaType.Image) {
         emoji = "📸"
         label = TextColors.magenta("image")
     } else {

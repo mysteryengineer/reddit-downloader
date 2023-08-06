@@ -1,6 +1,6 @@
 # RMD (Reddit Media Downloader)
 
-Download all the picture/video posts from a particular user on Reddit, for uh... reasons. Automatically removes duplicates.
+Download all the picture/video posts from a particular user on Reddit. It also removes duplicates and convert files to a better formats, with higher image quality and lower file sizes.
 
 **✨ Works with new Reddit API restrictions of July 1st 2023!**
 
@@ -23,7 +23,8 @@ Where:
 - `-e RMD_USER` (mandatory): is the Reddit username that you want to download images/videos from.
 - `-e RMD_LIMIT` (optional): the maximum number of posts that you want to query for media files; default `1000`.
 - `-e RMD_PARALLEL` (optional): the number of downloads to be done in parallel; default is `5`.
-- `-e RMD_CONVERT_GIFS` (optional): `true/false`, if you want to convert the animated gifs to video; default `true`.
+- `-e RMD_CONVERT_IMAGES` (optional): `true/false`, if you want to convert image files to WebP; default `true`.
+- `-e RMD_CONVERT_VIDEOS` (optional): `true/false`, if you want to convert video files to WebM; default `false`.
 
 ## 🎥 Demo
 
