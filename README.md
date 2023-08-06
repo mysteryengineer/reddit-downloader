@@ -13,7 +13,8 @@ $ docker run --rm -t \
     -e RMD_USER=atomicbrunette18 \
     -e RMD_LIMIT=1000 \
     -e RMD_PARALLEL=5 \
-    -e RMD_CONVERT_GIFS=true \
+    -e RMD_CONVERT_IMAGES=true \
+    -e RMD_CONVERT_VIDEOS=true \
     -v "/path/in/your/computer:/tmp/rmd" \
     vegidio/rmd
 ```
@@ -24,7 +25,7 @@ Where:
 - `-e RMD_LIMIT` (optional): the maximum number of posts that you want to query for media files; default `1000`.
 - `-e RMD_PARALLEL` (optional): the number of downloads to be done in parallel; default is `5`.
 - `-e RMD_CONVERT_IMAGES` (optional): `true/false`, if you want to convert image files to WebP; default `true`.
-- `-e RMD_CONVERT_VIDEOS` (optional): `true/false`, if you want to convert video files to WebM; default `false`.
+- `-e RMD_CONVERT_VIDEOS` (optional): `true/false`, if you want to convert video files to WebM; default `true`.
 
 ## 🎥 Demo
 

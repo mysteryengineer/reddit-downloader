@@ -108,8 +108,10 @@ fun removeDuplicates(user: String, downloads: List<Download>) {
     }
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 fun convertImages(user: String, downloads: List<Download>) {
     val shell = Shell(File("/tmp/rmd/$user"))
+    val parallelismContext = Dispatchers.IO.limitedParallelism(5)
 
     val images = downloads
         .filter { it.isSuccess }
@@ -117,23 +119,31 @@ fun convertImages(user: String, downloads: List<Download>) {
 
     if (images.isNotEmpty()) t.println("\n⚙️ Converting images to WebP...")
 
-    images.forEach {
-        val oldFile = File("/tmp/rmd/$user", it.fileName)
-        val oldExtension = ".${oldFile.extension}"
-        val newFile = File("/tmp/rmd/$user", it.fileName.replace(oldExtension, ".webp"))
+    runBlocking {
+        val jobs = images.map {
+            launch(parallelismContext) {
+                val oldFile = File("/tmp/rmd/$user", it.fileName)
+                val oldExtension = ".${oldFile.extension}"
+                val newFile = File("/tmp/rmd/$user", it.fileName.replace(oldExtension, ".webp"))
 
-        if (oldFile.exists()) {
-            t.println("[${TextColors.green("C")}] Converting ${oldFile.absolutePath} to WebP...")
-            shell.convertToWebp(oldFile.absolutePath, newFile.absolutePath)
+                if (oldFile.exists()) {
+                    t.println("[${TextColors.green("C")}] Converting ${oldFile.absolutePath} to WebP...")
+                    shell.convertToWebp(oldFile.absolutePath, newFile.absolutePath)
 
-            // If the file was converted successfully, then we delete the original file
-            if (newFile.exists()) oldFile.delete()
+                    // If the file was converted successfully, then we delete the original file
+                    if (newFile.exists()) oldFile.delete()
+                }
+            }
         }
+
+        jobs.joinAll()
     }
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 fun convertVideos(user: String, downloads: List<Download>) {
     val shell = Shell(File("/tmp/rmd/$user"))
+    val parallelismContext = Dispatchers.IO.limitedParallelism(5)
 
     val videos = downloads
         .filter { it.isSuccess }
@@ -141,17 +151,23 @@ fun convertVideos(user: String, downloads: List<Download>) {
 
     if (videos.isNotEmpty()) t.println("\n⚙️ Converting videos to WebM...")
 
-    videos.forEach {
-        val oldFile = File("/tmp/rmd/$user", it.fileName)
-        val oldExtension = ".${oldFile.extension}"
-        val newFile = File("/tmp/rmd/$user", it.fileName.replace(oldExtension, ".webm"))
+    runBlocking {
+        val jobs = videos.map {
+            launch(parallelismContext) {
+                val oldFile = File("/tmp/rmd/$user", it.fileName)
+                val oldExtension = ".${oldFile.extension}"
+                val newFile = File("/tmp/rmd/$user", it.fileName.replace(oldExtension, ".webm"))
 
-        if (oldFile.exists()) {
-            t.println("[${TextColors.green("C")}] Converting ${oldFile.absolutePath} to WebM...")
-            shell.convertToWebm(oldFile.absolutePath, newFile.absolutePath)
+                if (oldFile.exists()) {
+                    t.println("[${TextColors.green("C")}] Converting ${oldFile.absolutePath} to WebM...")
+                    shell.convertToWebm(oldFile.absolutePath, newFile.absolutePath)
 
-            // If the file was converted successfully, then we delete the original file
-            if (newFile.exists()) oldFile.delete()
+                    // If the file was converted successfully, then we delete the original file
+                    if (newFile.exists()) oldFile.delete()
+                }
+            }
         }
+
+        jobs.joinAll()
     }
 }
