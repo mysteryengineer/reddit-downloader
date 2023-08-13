@@ -35,7 +35,7 @@ fun getSubmissions(user: String, limit: Int): Set<Submission> {
         }
     } while (list.isNotEmpty() && counter < ceil(limit / 100f) && after != null)
 
-    t.println(" ${min(submissions.size, limit)}/$limit unique posts found\n")
+    t.println(" ${min(submissions.size, limit)}/$limit unique posts found")
 
     return submissions.take(limit).toSet()
 }

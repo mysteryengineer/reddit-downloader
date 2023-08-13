@@ -22,10 +22,17 @@ fun getFileExtension(fileName: String): String? {
     }
 }
 
-fun printMostRecent(padding: Int): Animation<List<Pair<Int, Submission>>> {
+fun printMostRecent(padding: Int): Animation<List<Pair<Int, Submission>?>> {
     return t.textAnimation { list ->
-        list.joinToString("\n", "\n") { (index, submission) ->
-            downloadInfo(index, padding, submission)
+        val finalList = list + List(5 - list.size) { null }
+
+        finalList.joinToString("\n", "\n") {
+            if (it == null) {
+                ""
+            } else {
+                val (index, submission) = it
+                downloadInfo(index, padding, submission)
+            }
         }
     }
 }
