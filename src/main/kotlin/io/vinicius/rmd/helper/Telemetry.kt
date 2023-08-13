@@ -4,6 +4,7 @@ import com.mixpanel.mixpanelapi.ClientDelivery
 import com.mixpanel.mixpanelapi.MessageBuilder
 import com.mixpanel.mixpanelapi.MixpanelAPI
 import org.json.JSONObject
+import java.io.IOException
 import java.util.UUID
 
 object Telemetry {
@@ -28,7 +29,10 @@ object Telemetry {
 
         val event = messageBuilder.event(trackingId, "Download Start", props)
         val delivery = ClientDelivery().apply { addMessage(event) }
-        mixpanel.deliver(delivery)
+
+        try {
+            mixpanel.deliver(delivery)
+        } catch (_: IOException) {}
     }
 
     fun trackDownloadEnd(
@@ -46,6 +50,9 @@ object Telemetry {
 
         val event = messageBuilder.event(trackingId, "Download End", props)
         val delivery = ClientDelivery().apply { addMessage(event) }
-        mixpanel.deliver(delivery)
+
+        try {
+            mixpanel.deliver(delivery)
+        } catch (_: IOException) {}
     }
 }

@@ -1,6 +1,6 @@
 # RMD (Reddit Media Downloader)
 
-Download all the picture/video posts from a particular user on Reddit. It also removes duplicates and convert files to a better formats, with higher image quality and lower file sizes.
+Download all the picture/video posts from a particular user on Reddit. It also removes duplicates and convert files to better formats, with higher image quality and smaller file sizes.
 
 **✨ Works with new Reddit API restrictions of July 1st 2023!**
 
@@ -31,7 +31,9 @@ Where:
 - `-e RMD_CONVERT_IMAGES` (optional): `true/false`, if you want to convert images to WebP; default `true`.
 - `-e RMD_CONVERT_VIDEOS` (optional): `true/false`, if you want to convert videos to WebM; default `true`.
 
-For those that are not familiar with Docker, the `-v` (volume) parameter defines where the media will be downloaded, and it's divided in two parts, separated by the colon sign `:`. You just need to worry about the first part, on the left sign of the colon sign (**don't change anything on the right side of the colon sign**) and update it according to a path in your computer where you want the media to be downloaded.
+### Volume
+
+For those that are not familiar with Docker, the `-v` (volume) parameter defines where the media will be saved, and it's divided in two parts, separated by the colon sign `:`. You just need to worry about the first part, on the left side of the colon sign (**don't change anything on the right side**) and update it according to a path in your computer where you want the media to be downloaded.
 
 So, for example, if you want to download the media in the directory `/Downloads/Reddit` then the volume parameter should look like this `-v "/Downloads/Reddit:/tmp/rmd"`.
 
