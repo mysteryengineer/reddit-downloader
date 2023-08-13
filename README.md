@@ -10,7 +10,7 @@ Download all the picture/video posts from a particular user on Reddit. It also r
 
 ## 🖼️ Usage
 
-Install Docker in your computer and run the command below:
+Install [Docker](https://docs.docker.com/get-docker/) in your computer, then run the command below:
 
 ```
 $ docker run --rm -t \
@@ -26,10 +26,14 @@ $ docker run --rm -t \
 Where:
 
 - `-e RMD_USER` (mandatory): is the Reddit username that you want to download images/videos from.
-- `-e RMD_LIMIT` (optional): the maximum number of posts that you want to query for media files; default `1000`.
+- `-e RMD_LIMIT` (optional): the max number of posts that you want to query for media files; default `1000`.
 - `-e RMD_PARALLEL` (optional): the number of downloads to be done in parallel; default is `5`.
 - `-e RMD_CONVERT_IMAGES` (optional): `true/false`, if you want to convert images to WebP; default `true`.
 - `-e RMD_CONVERT_VIDEOS` (optional): `true/false`, if you want to convert videos to WebM; default `true`.
+
+For those that are not familiar with Docker, the `-v` (volume) parameter defines where the media will be downloaded, and it's divided in two parts, separated by the colon sign `:`. You just need to worry about the first part, on the left sign of the colon sign (**don't change anything on the right side of the colon sign**) and update it according to a path in your computer where you want the media to be downloaded.
+
+So, for example, if you want to download the media in the directory `/Downloads/Reddit` then the volume parameter should look like this `-v "/Downloads/Reddit:/tmp/rmd"`.
 
 ## 💡 Identical Files
 
