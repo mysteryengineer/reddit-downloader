@@ -1,6 +1,7 @@
 package io.vinicius.rmd
 
 import io.vinicius.rmd.helper.Shell.Companion.t
+import io.vinicius.rmd.helper.Telemetry
 import io.vinicius.rmd.util.convertImages
 import io.vinicius.rmd.util.convertVideos
 import io.vinicius.rmd.util.createReport
@@ -20,6 +21,10 @@ fun main() {
         error("🧨 Missing the environment variable RMD_USER")
     }
 
+    if (telemetry) {
+        Telemetry.trackDownloadStart(user, limit, parallel, convertImages, convertVideos)
+    }
+
     val submissions = try {
         getSubmissions(user, limit)
     } catch (_: Exception) {
@@ -29,7 +34,11 @@ fun main() {
 
     val downloads = downloadMedia(user, submissions, parallel)
 
-    removeDuplicates(user, downloads)
+    val duplicated = removeDuplicates(user, downloads)
+
+    if (telemetry) {
+        Telemetry.trackDownloadEnd(user, downloads.size, downloads.filter { !it.isSuccess }.size, duplicated)
+    }
 
     createReport(user, downloads)
 

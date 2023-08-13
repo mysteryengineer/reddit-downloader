@@ -84,13 +84,15 @@ fun downloadMedia(user: String, submissions: Set<Submission>, parallel: Int): Li
     return downloads
 }
 
-fun removeDuplicates(user: String, downloads: List<Download>) {
+fun removeDuplicates(user: String, downloads: List<Download>): Int {
+    var numDeleted = 0
     t.println("\n🚮 Removing duplicated downloads...")
 
     // Removing 0-byte files
     downloads.forEach {
         val file = File("/tmp/rmd/$user", it.fileName)
         if (file.exists() && file.length() == 0L) {
+            numDeleted++
             t.println("[${TextColors.brightBlue("Z")}] ${file.absoluteFile}")
             file.delete()
         }
@@ -101,11 +103,14 @@ fun removeDuplicates(user: String, downloads: List<Download>) {
         it.drop(1).forEach { download ->
             val file = File("/tmp/rmd/$user", download.fileName)
             if (file.exists()) {
+                numDeleted++
                 t.println("[${TextColors.brightRed("D")}] ${file.absoluteFile}")
                 file.delete()
             }
         }
     }
+
+    return numDeleted
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)

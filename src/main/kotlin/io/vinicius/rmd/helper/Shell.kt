@@ -1,6 +1,5 @@
 package io.vinicius.rmd.helper
 
-import com.github.ajalt.mordant.terminal.ExperimentalTerminalApi
 import com.github.ajalt.mordant.terminal.Terminal
 import java.io.File
 import java.io.IOException
@@ -83,7 +82,6 @@ class Shell(private val directory: File, private val debug: Boolean = false) {
     // endregion
 
     companion object {
-        @OptIn(ExperimentalTerminalApi::class)
         val t = Terminal()
     }
 }

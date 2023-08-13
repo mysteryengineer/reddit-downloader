@@ -16,14 +16,15 @@ repositories {
 }
 
 dependencies {
-    // Others
-    implementation(libs.mordant)
-    implementation(libs.coroutines.core)
-    implementation(libs.moshi)
-
     // OkHttp
     implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp)
+
+    // General
+    implementation(libs.coroutines.core)
+    implementation(libs.mixpanel)
+    implementation(libs.mordant)
+    implementation(libs.moshi)
 }
 
 tasks.withType<KotlinCompile> {
