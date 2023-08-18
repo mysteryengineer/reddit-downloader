@@ -38,10 +38,10 @@ class Shell(private val directory: File, private val debug: Boolean = false) {
 
     fun convertToWebm(oldFile: String, newFile: String) {
         if (oldFile.endsWith(".gif", true)) {
-            runCommand("ffmpeg -i $oldFile -movflags faststart -pix_fmt yuv420p " +
+            runCommand("ffmpeg -i $oldFile -row-mt 1 -movflags faststart -pix_fmt yuv420p " +
                 "-vf scale=trunc(iw/2)*2:trunc(ih/2)*2 $newFile")
         } else {
-            runCommand("ffmpeg -i $oldFile $newFile")
+            runCommand("ffmpeg -i $oldFile -row-mt 1 $newFile")
         }
     }
 
