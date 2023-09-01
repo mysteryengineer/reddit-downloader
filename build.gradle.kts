@@ -1,3 +1,4 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -35,9 +36,13 @@ application {
     mainClass.set("io.vinicius.rmd.MainKt")
 }
 
+tasks.withType<ShadowJar> {
+    archiveFileName.set("rmd.${archiveExtension.get()}")
+}
+
 tasks.register<Exec>("docker") {
     val calver = LocalDate.now().format(DateTimeFormatter.ofPattern("uu.M.d"))
     workingDir(".")
     executable("docker")
-    args("build", "-t", "vegidio/rmd", ".", "--build-arg", "VERSION=$calver")
+    args("build", "-t", "vegidio/reddit-media-downloader", ".", "--build-arg", "VERSION=$calver")
 }

@@ -6,7 +6,7 @@ Download all the picture/video posts from a particular user on Reddit. It also r
 
 ## 🎥 Demo
 
-[![asciicast](https://asciinema.org/a/gIgoLGQiQHWPFzf7KNjzfRaYa.svg)](https://asciinema.org/a/gIgoLGQiQHWPFzf7KNjzfRaYa)
+[![asciicast](https://asciinema.org/a/4tayss7Tgxc6UL0qOoXFnAxxW.svg)](https://asciinema.org/a/4tayss7Tgxc6UL0qOoXFnAxxW)
 
 ## 🖼️ Usage
 
@@ -20,7 +20,7 @@ $ docker run --rm -t \
     -e RMD_CONVERT_IMAGES=true \
     -e RMD_CONVERT_VIDEOS=true \
     -v "/path/in/your/computer:/tmp/rmd" \
-    vegidio/rmd
+    vegidio/reddit-media-downloader
 ```
 
 Where:
@@ -46,7 +46,7 @@ This application will automatically delete all files that are identical.
 In the project's root folder run in the CLI:
 
 ```
-$ docker build -t vegidio/rmd .
+$ docker build -t vegidio/reddit-media-downloader .
 ```
 
 ## 📈 Telemetry

@@ -1,1 +1,1 @@
-rootProject.name = "rmd"
+rootProject.name = "reddit-media-downloader"

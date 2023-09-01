@@ -17,7 +17,7 @@ FROM alpine:edge AS JRE_IMAGE
 RUN apk add --no-cache openjdk17 binutils --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
 
 WORKDIR /tmp
-COPY --from=BUILD_IMAGE /rmd/build/libs/rmd-1.0-all.jar /tmp/rmd.jar
+COPY --from=BUILD_IMAGE /rmd/build/libs/rmd.jar /tmp/rmd.jar
 RUN unzip rmd.jar
 RUN jdeps --print-module-deps --ignore-missing-deps --recursive --multi-release 17 \
     --class-path="BOOT-INF/lib/*" --module-path="BOOT-INF/lib/*" rmd.jar > /deps.txt
@@ -48,6 +48,6 @@ COPY --from=JRE_IMAGE /customjre $JAVA_HOME
 ARG VERSION
 ENV IMAGE_VERSION=$VERSION
 
-COPY --from=BUILD_IMAGE /rmd/build/libs/rmd-1.0-all.jar /var/rmd.jar
+COPY --from=BUILD_IMAGE /rmd/build/libs/rmd.jar /var/rmd.jar
 
 ENTRYPOINT ["java", "-jar", "/var/rmd.jar"]
