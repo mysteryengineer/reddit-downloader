@@ -5,7 +5,7 @@
       <env name="RMD_LIMIT" value="1000" />
     </envs>
     <option name="MAIN_CLASS_NAME" value="io.vinicius.rmd.MainKt" />
-    <module name="rmd.main" />
+    <module name="reddit-media-downloader.main" />
     <shortenClasspath name="NONE" />
     <method v="2">
       <option name="Make" enabled="true" />

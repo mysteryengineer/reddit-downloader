@@ -7,6 +7,7 @@ import io.vinicius.rmd.util.convertVideos
 import io.vinicius.rmd.util.createReport
 import io.vinicius.rmd.util.downloadMedia
 import io.vinicius.rmd.util.getSubmissions
+import io.vinicius.rmd.util.isOutdatedImage
 import io.vinicius.rmd.util.removeDuplicates
 
 fun main() {
@@ -16,9 +17,15 @@ fun main() {
     val convertImages = System.getenv("RMD_CONVERT_IMAGES")?.toBoolean() ?: true
     val convertVideos = System.getenv("RMD_CONVERT_VIDEOS")?.toBoolean() ?: true
     val telemetry = System.getenv("RMD_TELEMETRY")?.toBoolean() ?: true
+    val isOutdated = isOutdatedImage(System.getenv("IMAGE_VERSION"))
 
     if (user == null) {
-        error("🧨 Missing the environment variable RMD_USER")
+        error("\n🧨 Missing the environment variable RMD_USER")
+    }
+
+    if (isOutdated) {
+        t.println("\n🔄 You are using an outdated version of this image. " +
+            "Please download the latest version to increase the chance of downloading the media.")
     }
 
     if (telemetry) {
@@ -29,7 +36,7 @@ fun main() {
         getSubmissions(user, limit)
     } catch (_: Exception) {
         error("\n🧨 Error fetching the posts; check if the servers are up by accessing the site " +
-                "https://www.redditstatus.com")
+            "https://www.redditstatus.com")
     }
 
     val downloads = downloadMedia(user, submissions, parallel)

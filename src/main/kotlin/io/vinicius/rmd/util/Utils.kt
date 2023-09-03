@@ -7,6 +7,20 @@ import com.github.ajalt.mordant.rendering.TextStyles
 import io.vinicius.rmd.helper.Shell.Companion.t
 import io.vinicius.rmd.model.Submission
 import io.vinicius.rmd.type.MediaType
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
+fun isOutdatedImage(imageVersion: String?): Boolean {
+    return if (imageVersion.isNullOrBlank()) {
+        true
+    } else {
+        val formatter = DateTimeFormatter.ofPattern("uu.M.d")
+        val date = LocalDate.parse(imageVersion, formatter)
+        val now = LocalDate.now()
+
+        date.month != now.month || date.year != now.year
+    }
+}
 
 fun createUrl(user: String, after: String): String {
     val baseUrl = "https://www.reddit.com/user/${user}/submitted.json"

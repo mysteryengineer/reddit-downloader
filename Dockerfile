@@ -50,4 +50,4 @@ ENV IMAGE_VERSION=$VERSION
 
 COPY --from=BUILD_IMAGE /rmd/build/libs/rmd.jar /var/rmd.jar
 
-ENTRYPOINT ["java", "-jar", "/var/rmd.jar"]
+CMD ["java", "-jar", "/var/rmd.jar"]

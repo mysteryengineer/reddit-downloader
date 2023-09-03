@@ -35,7 +35,7 @@ Where:
 
 For those that are not familiar with Docker, the `-v` (volume) parameter defines where the media will be saved, and it's divided in two parts, separated by the colon sign `:`. You just need to worry about the first part, on the left side of the colon sign (**don't change anything on the right side**) and update it according to a path in your computer where you want the media to be downloaded.
 
-So, for example, if you want to download the media in the directory `/Downloads/Reddit` then the volume parameter should look like this `-v "/Downloads/Reddit:/tmp/rmd"`.
+For example, if you want to download the media in the directory `/Downloads/Reddit` then the volume parameter should look like this `-v "/Downloads/Reddit:/tmp/rmd"`.
 
 ## 💡 Identical Files
 
@@ -51,7 +51,7 @@ $ docker build -t vegidio/reddit-media-downloader .
 
 ## 📈 Telemetry
 
-This Docker image collects information about data that you're downloading to help me track bugs and improve the general stability of the software.
+This Docker image collects information about the data that you're downloading to help me track bugs and improve the general stability of the software.
 
 **No identifiable information about you or your computer is tracked.** But if you still want to stop the telemetry, you can do that by adding the environment variable `-e RMD_TELEMETRY=false` when you run the container.
 
