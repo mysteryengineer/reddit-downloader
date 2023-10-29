@@ -27,7 +27,7 @@ object Telemetry {
             "convertVideos" to convertVideos
         ))
 
-        val event = messageBuilder.event(trackingId, "Download Start", props)
+        val event = messageBuilder.event(trackingId, "Reddit Download Start", props)
         val delivery = ClientDelivery().apply { addMessage(event) }
 
         try {
@@ -48,7 +48,7 @@ object Telemetry {
             "duplicated" to duplicated
         ))
 
-        val event = messageBuilder.event(trackingId, "Download End", props)
+        val event = messageBuilder.event(trackingId, "Reddit Download End", props)
         val delivery = ClientDelivery().apply { addMessage(event) }
 
         try {

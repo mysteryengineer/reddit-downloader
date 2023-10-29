@@ -44,5 +44,5 @@ tasks.register<Exec>("docker") {
     val calver = LocalDate.now().format(DateTimeFormatter.ofPattern("uu.M.d"))
     workingDir(".")
     executable("docker")
-    args("build", "-t", "vegidio/reddit-media-downloader", ".", "--build-arg", "VERSION=$calver")
+    args("build", "-t", "vegidio/reddit-downloader", ".", "--build-arg", "VERSION=$calver")
 }

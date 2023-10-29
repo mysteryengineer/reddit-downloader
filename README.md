@@ -1,4 +1,4 @@
-# RMD (Reddit Media Downloader)
+# Reddit Downloader
 
 Download all the picture/video posts from a particular user on Reddit. It also removes duplicates and convert files to better formats, with higher image quality and smaller file sizes.
 
@@ -20,7 +20,7 @@ $ docker run --rm -t \
     -e RMD_CONVERT_IMAGES=true \
     -e RMD_CONVERT_VIDEOS=true \
     -v "/path/in/your/computer:/tmp/rmd" \
-    vegidio/reddit-media-downloader
+    vegidio/reddit-downloader
 ```
 
 Where:
@@ -46,7 +46,7 @@ This application will automatically delete all files that are identical.
 In the project's root folder run in the CLI:
 
 ```
-$ docker build -t vegidio/reddit-media-downloader .
+$ docker build -t vegidio/reddit-downloader .
 ```
 
 ## 📈 Telemetry

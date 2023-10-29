@@ -8,7 +8,7 @@ on:
     - cron: '0 0 1 * *' # For more: https://crontab.guru
 
 env:
-  IMAGE_NAME: vegidio/reddit-media-downloader
+  IMAGE_NAME: vegidio/reddit-downloader
 
 jobs:
   build:

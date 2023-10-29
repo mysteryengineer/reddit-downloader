@@ -1,1 +1,1 @@
-rootProject.name = "reddit-media-downloader"
+rootProject.name = "reddit-downloader"
