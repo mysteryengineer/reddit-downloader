@@ -1,14 +1,12 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Run" type="JetRunConfigurationType">
-    <envs>
-      <env name="RMD_USER" value="atomicbrunette18" />
-      <env name="RMD_LIMIT" value="1000" />
-    </envs>
-    <option name="MAIN_CLASS_NAME" value="io.vinicius.rmd.MainKt" />
-    <module name="reddit-downloader.main" />
-    <shortenClasspath name="NONE" />
-    <method v="2">
-      <option name="Make" enabled="true" />
-    </method>
+  <configuration default="false" name="Run" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="reddit" />
+    <working_directory value="$PROJECT_DIR$" />
+    <parameters value="-s onlyfans -u dyanny" />
+    <kind value="PACKAGE" />
+    <package value="reddit" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$/main.go" />
+    <method v="2" />
   </configuration>
 </component>

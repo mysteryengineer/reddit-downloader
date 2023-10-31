@@ -2,32 +2,99 @@ name: build
 
 on:
   push:
-    branches:
-      - main
-  schedule:
-    - cron: '0 0 1 * *' # For more: https://crontab.guru
+    branches: main
 
 env:
+  BINARY_NAME: reddit-dl
   IMAGE_NAME: vegidio/reddit-downloader
 
 jobs:
   build:
-    if: "!contains(github.event.head_commit.message, '[skip-ci]') && !contains(github.event.head_commit.message, '👀')"
     runs-on: ubuntu-latest
-
     steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
+    - uses: actions/checkout@v3
 
-      - name: Checkout the code
-        uses: actions/checkout@v3
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
 
+    - name: Set version
+      id: vars
+      run: |
+        version=$(date +'%y.%-m.%-d')
+        sed -i "s/<version>/$version/g" main.go
+
+    - name: Build Linux binaries
+      run: |
+        mkdir -p builds
+        GOOS=linux GOARCH=amd64 go build -o builds/${{ env.BINARY_NAME }}
+        zip -j -9 builds/${{ env.BINARY_NAME }}_linux_amd64.zip builds/${{ env.BINARY_NAME }}
+        
+        GOOS=linux GOARCH=arm64 go build -o builds/${{ env.BINARY_NAME }}
+        zip -j -9 builds/${{ env.BINARY_NAME }}_linux_arm64.zip builds/${{ env.BINARY_NAME }}
+        
+        GOOS=linux GOARCH=arm go build -o builds/${{ env.BINARY_NAME }}
+        zip -j -9 builds/${{ env.BINARY_NAME }}_linux_arm.zip builds/${{ env.BINARY_NAME }}
+
+    - name: Build macOS binaries
+      run: |
+        GOOS=darwin GOARCH=amd64 go build -o builds/${{ env.BINARY_NAME }}
+        zip -j -9 builds/${{ env.BINARY_NAME }}_macos_amd64.zip builds/${{ env.BINARY_NAME }}
+        
+        GOOS=darwin GOARCH=arm64 go build -o builds/${{ env.BINARY_NAME }}
+        zip -j -9 builds/${{ env.BINARY_NAME }}_macos_arm64.zip builds/${{ env.BINARY_NAME }}
+
+    - name: Build Windows binaries
+      run: |
+        GOOS=windows GOARCH=amd64 go build -o builds/${{ env.BINARY_NAME }}.exe
+        zip -j -9 builds/${{ env.BINARY_NAME }}_windows_amd64.zip builds/${{ env.BINARY_NAME }}.exe
+        
+        GOOS=windows GOARCH=386 go build -o builds/${{ env.BINARY_NAME }}.exe
+        zip -j -9 builds/${{ env.BINARY_NAME }}_windows_386.zip builds/${{ env.BINARY_NAME }}.exe
+
+    - name: Remove temporary files
+      run: |
+        rm -rf builds/${{ env.BINARY_NAME }} builds/${{ env.BINARY_NAME }}.exe
+
+    - name: Save artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: binaries
+        path: ./builds/
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: write
+    steps:
       - name: Set variables
         id: vars
         run: |
-          echo "IMAGE_VERSION=$(date +'%y.%-m.%-d')" >> $GITHUB_ENV
+          echo "VERSION=$(date +'%y.%-m.%-d')" >> $GITHUB_ENV
+
+      - name: Fetch artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: binaries
+
+      - uses: ncipollo/release-action@v1
+        with:
+          name: ${{ env.VERSION }}
+          tag: ${{ env.VERSION }}
+          commit: master
+          allowUpdates: true
+          replacesArtifacts: true
+          artifacts: "*.zip"
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set variables
+        id: vars
+        run: |
+          echo "VERSION=$(date +'%y.%-m.%-d')" >> $GITHUB_ENV
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v2
@@ -45,7 +112,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           platforms: linux/amd64,linux/arm64
-          tags: ${{ env.IMAGE_NAME }},${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}
+          tags: ${{ env.IMAGE_NAME }},${{ env.IMAGE_NAME }}:${{ env.VERSION }}
           push: true
           build-args: |
-            VERSION=${{ env.IMAGE_VERSION }}
+            VERSION=${{ env.VERSION }}
