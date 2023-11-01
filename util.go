@@ -2,14 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/go-resty/resty/v2"
 	"os"
 	"os/user"
 	"path/filepath"
 	"strings"
 )
-
-var client = resty.New()
 
 func ExpandPath(path string) (string, error) {
 	if strings.HasPrefix(path, "~") {
@@ -22,13 +19,9 @@ func ExpandPath(path string) (string, error) {
 	return path, nil
 }
 
-func FetchUrl(url string) string {
-	resp, err := client.R().Get(url)
-	if err != nil {
-		PrintError("Error fetching URL: %s", err)
-	}
-
-	return resp.String()
+func ReplaceExtension(filePath string, newExtension string) string {
+	extension := filepath.Ext(filePath)
+	return strings.Replace(filePath, extension, newExtension, 1)
 }
 
 func CreateReport(directory string, downloads []Download) {

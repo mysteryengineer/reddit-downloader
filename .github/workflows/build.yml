@@ -83,7 +83,7 @@ jobs:
         with:
           name: ${{ env.VERSION }}
           tag: ${{ env.VERSION }}
-          commit: master
+          commit: main
           allowUpdates: true
           replacesArtifacts: true
           artifacts: "*.zip"

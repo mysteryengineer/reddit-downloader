@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Run" type="GoApplicationRunConfiguration" factoryName="Go Application">
-    <module name="reddit" />
+    <module name="reddit-downloader" />
     <working_directory value="$PROJECT_DIR$" />
-    <parameters value="-s onlyfans -u dyanny" />
+    <parameters value="-s user -n atomicbrunette18" />
     <kind value="PACKAGE" />
     <package value="reddit" />
     <directory value="$PROJECT_DIR$" />

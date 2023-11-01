@@ -5,7 +5,6 @@ import (
 	"github.com/spf13/afero"
 	"github.com/thoas/go-funk"
 	"path/filepath"
-	"strings"
 )
 
 var fs = afero.NewOsFs()
@@ -21,7 +20,7 @@ func ConvertImages(downloads []Download) {
 	}
 
 	for _, images := range filteredDownloads {
-		outputFile := replaceExtension(images.FilePath, ".webp")
+		outputFile := ReplaceExtension(images.FilePath, ".webp")
 
 		pterm.Printf("["+pterm.Green("C")+"] Converting %s to WebP...\n", images.FilePath)
 		ConvertToWebP(images.FilePath, outputFile)
@@ -44,7 +43,7 @@ func ConvertVideos(downloads []Download) {
 	}
 
 	for _, video := range filteredDownloads {
-		outputFile := replaceExtension(video.FilePath, ".webm")
+		outputFile := ReplaceExtension(video.FilePath, ".webm")
 
 		pterm.Printf("["+pterm.Green("C")+"] Converting %s to WebM...\n", video.FilePath)
 		ConvertToWebM(video.FilePath, outputFile)
@@ -80,11 +79,6 @@ func RemoveDuplicates(downloads []Download) int {
 }
 
 // region - Private functions
-
-func replaceExtension(filePath string, newExtension string) string {
-	extension := filepath.Ext(filePath)
-	return strings.Replace(filePath, extension, newExtension, 1)
-}
 
 func fileExists(filePath string) bool {
 	exists, err := afero.Exists(fs, filePath)

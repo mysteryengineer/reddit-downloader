@@ -9,8 +9,8 @@ import (
 )
 
 func main() {
-	var service string
-	var user string
+	var source string
+	var name string
 	var directory string
 	var parallel int
 	var limit int
@@ -23,31 +23,31 @@ func main() {
 	app := &cli.App{
 		Name:            "reddit-dl",
 		Usage:           "a CLI tool to download files from https://reddit.com",
-		UsageText:       "reddit-dl -s [onlyfans/fansly] -u [user] [global options]",
+		UsageText:       "reddit-dl -s [user/subreddit] -n [name] [global options]",
 		Version:         "<version>",
 		HideHelpCommand: true,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:        "service",
+				Name:        "source",
 				Aliases:     []string{"s"},
-				Usage:       "service where the files are hosted; 'onlyfans' or 'fansly'",
-				Destination: &service,
+				Usage:       "the source type on Reddit where the media is located: 'user' or 'subreddit'",
+				Destination: &source,
 				Category:    "Required:",
-				EnvVars:     []string{"REDDIT_SERVICE"},
+				EnvVars:     []string{"REDDIT_SOURCE"},
 				Action: func(context *cli.Context, s string) error {
-					if s != "onlyfans" && s != "fansly" {
-						return fmt.Errorf("Invalid service '%s'", service)
+					if s != "user" && s != "subreddit" {
+						return fmt.Errorf("Invalid source '%s'", source)
 					}
 					return nil
 				},
 			},
 			&cli.StringFlag{
-				Name:        "user",
-				Aliases:     []string{"u"},
-				Usage:       "user that you want to download files from",
-				Destination: &user,
+				Name:        "name",
+				Aliases:     []string{"n"},
+				Usage:       "the name of the subreddit or user profile you want to download media from",
+				Destination: &name,
 				Category:    "Required:",
-				EnvVars:     []string{"REDDIT_USER"},
+				EnvVars:     []string{"REDDIT_NAME"},
 			},
 			&cli.StringFlag{
 				Name:        "dir",
@@ -60,27 +60,27 @@ func main() {
 			},
 			&cli.IntFlag{
 				Name:        "parallel",
-				Value:       3,
+				Value:       5,
 				Usage:       "the number of downloads to be done in parallel",
 				Destination: &parallel,
 				Category:    "Optional:",
-				DefaultText: "3",
+				DefaultText: "5",
 				EnvVars:     []string{"REDDIT_PARALLEL"},
 				Action: func(context *cli.Context, i int) error {
-					if i < 1 || i > 5 {
-						return fmt.Errorf("The number of parallel downloads should be between 1-5")
+					if i < 1 || i > 10 {
+						return fmt.Errorf("The number of parallel downloads should be between 1-10")
 					}
 					return nil
 				},
 			},
 			&cli.IntFlag{
 				Name:        "limit",
-				Value:       1_000_000,
+				Value:       1000,
 				Usage:       "the maximum number of files to be downloaded",
 				Destination: &limit,
 				Category:    "Optional:",
 				EnvVars:     []string{"REDDIT_LIMIT"},
-				DefaultText: "all files",
+				DefaultText: "1000",
 				Action: func(context *cli.Context, i int) error {
 					if i < 1 {
 						return fmt.Errorf("The number of max downloads should be at least 1")
@@ -117,23 +117,23 @@ func main() {
 			},
 		},
 		Action: func(cCtx *cli.Context) error {
-			if service == "" {
-				return fmt.Errorf("Required flag '--service', '-s' is missing")
+			if source == "" {
+				return fmt.Errorf("Required flag '--source', '-s' is missing")
 			}
 
-			if user == "" {
-				return fmt.Errorf("Required flag '--user', '-u' is missing")
+			if name == "" {
+				return fmt.Errorf("Required flag '--name', '-u' is missing")
 			}
 
-			fullDir, err := ExpandPath(filepath.Join(directory, user))
+			fullDir, err := ExpandPath(filepath.Join(directory, name))
 			if err != nil {
 				return fmt.Errorf("Directory path %s is invalid", directory)
 			}
 
 			startJob(
 				cCtx.App.Version,
-				service,
-				user,
+				source,
+				name,
 				fullDir,
 				parallel,
 				limit,
@@ -165,8 +165,8 @@ func main() {
 
 func startJob(
 	version string,
-	service string,
-	user string,
+	source string,
+	name string,
 	directory string,
 	parallel int,
 	limit int,
@@ -175,17 +175,17 @@ func startJob(
 	convertVideos bool,
 ) {
 	if !noTelemetry {
-		TrackDownloadStart(version, service, user, parallel, limit, false, false)
+		TrackDownloadStart(version, source, name, parallel, limit, false, false)
 	}
 
-	medias := GetMedias(service, user, directory, limit)
+	submissions := GetUserMedias(name, limit)
 
-	downloads := DownloadMedias(medias, parallel)
+	downloads := DownloadMedias(submissions, name, directory, parallel)
 
 	duplicated := RemoveDuplicates(downloads)
 
 	if !noTelemetry {
-		TrackDownloadEnd(version, service, user, len(medias), 0, duplicated)
+		TrackDownloadEnd(version, source, name, len(submissions), 0, duplicated)
 	}
 
 	CreateReport(directory, downloads)

@@ -26,20 +26,23 @@ func ConvertToWebM(inputFile string, outputFile string) {
 }
 
 func CheckDeps() {
-	pterm.Print("Checking dependency " + pterm.Bold.Sprintf("libwebp") + " ... ")
-	_, err := runCommand("cwebp -version")
-	if err == nil {
-		pterm.Println("✅")
-	} else {
-		pterm.Println("❌")
+	dependencies := map[string]string{
+		"yt-dlp":  "yt-dlp --version",
+		"libwebp": "cwebp -version",
+		"FFmpeg":  "ffmpeg -version",
 	}
 
-	pterm.Print("Checking dependency " + pterm.Bold.Sprintf("FFmpeg") + " .... ")
-	_, err = runCommand("ffmpeg -version")
-	if err == nil {
-		pterm.Println("✅")
-	} else {
-		pterm.Println("❌")
+	for name, cmd := range dependencies {
+		padding := 10 - len(name)
+		pterm.Print("Checking dependency " + pterm.Bold.Sprintf(name) +
+			pterm.Sprintf(" %s ", strings.Repeat(".", padding)))
+
+		_, err := runCommand(cmd)
+		if err == nil {
+			pterm.Println("✅")
+		} else {
+			pterm.Println("❌")
+		}
 	}
 }
 

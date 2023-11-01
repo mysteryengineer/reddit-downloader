@@ -17,7 +17,7 @@ FROM alpine:edge
 LABEL maintainer="Vinicius Egidio <me@vinicius.io>"
 
 # Dependencies
-RUN apk add --no-cache libwebp-tools ffmpeg --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
+RUN apk add --no-cache yt-dlp libwebp-tools ffmpeg --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
 
 # Define the image version
 ARG VERSION

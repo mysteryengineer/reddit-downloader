@@ -2,6 +2,8 @@
 
 Download all the pictures/videos posts from a particular user on Reddit. It also removes duplicates and convert files to better formats, with higher image quality and smaller file sizes.
 
+**✨ Works with new Reddit API restrictions of July 1st 2023!**
+
 ## 🎥 Demo
 
 [![asciicast](https://asciinema.org/a/HEdsWHzkGMjiRutUr4wAJkvHB.svg)](https://asciinema.org/a/HEdsWHzkGMjiRutUr4wAJkvHB)
@@ -10,24 +12,24 @@ Download all the pictures/videos posts from a particular user on Reddit. It also
 
 There are 2 ways to use this app: through the CLI tool or using Docker. Here are some points to consider to help you choose which solution is best for you:
 
-1. **CLI tool**: if you just intent to use __reddit-dl__ to download the files, but have no intention to automatically convert them to better/smaller formats (WebP/WebM), then stick with the CLI tool.
+1. **CLI tool**: this is quick and easier way to use __reddit-dl__ however you must make sure that you have some dependencies installed in your computer before using it.
 
-    - You can also use the CLI tool to convert files, however you must make sure that you have all the dependencies properly installed in your computer.
+    - *Dependencies:* Install [yt-dlp](https://github.com/yt-dlp/yt-dlp#installation) (required) and [libwebp](https://developers.google.com/speed/webp/download) / [FFmpeg](https://www.ffmpeg.org/download.html) (both optional) before using the CLI tool. You can verify if all dependencies are properly installed by running the command `reddit-dl check-deps`.
 
-2. **Docker**: if you want __reddit-dl__ to not only download the files, but also convert them to better formats, then Docker is probably a better option since it comes with all required dependencies installed.
+2. **Docker**: if you don't want to worry about installing dependencies in your computer before using __reddit-dl__ then the Docker version is probably better since it comes with all the dependencies ready to use.
 
 ### CLI Tool
 
 Download the [latest version](https://github.com/vegidio/reddit-downloader/releases) of __reddit-dl__ that matches your computer architecture and operating system. Extract the .zip file somewhere and then run the command below in the terminal:
 
 ```
-$ reddit-dl -s onlyfans -u atomicbrunette18 -d /Downloads/Reddit
+$ reddit-dl -s user -u atomicbrunette18 -d /Downloads/Reddit
 ```
 
 Where:
 
-- `-s` (mandatory): the service where the files were originally posted; `onlyfans` or `fansly`.
-- `-u` (mandatory): the user that you want to download images from.
+- `-s` (mandatory): the source type on Reddit where the files are located; `user` or `subreddit`.
+- `-n` (mandatory): the name of the user or subreddit you want to download media from.
 - `-d` (optional): the directory where you want the files to be saved; default is the current directory.
 
 For the full list of parameters, type `reddit-dl --help` in the terminal.
@@ -38,16 +40,16 @@ Install [Docker](https://docs.docker.com/get-docker/) in your computer, then run
 
 ```
 $ docker run --rm -t \
-    -e REDDIT_SERVICE=onlyfans \
-    -e REDDIT_USER=atomicbrunette18 \
+    -e REDDIT_SOURCE=user \
+    -e REDDIT_NAME=atomicbrunette18 \
     -v "/path/in/your/computer:/tmp/reddit" \
     vegidio/reddit-downloader
 ```
 
 Where:
 
-- `-e REDDIT_SERVICE`: (mandatory): where the files were originally posted; `onlyfans` or `fansly`.
-- `-e REDDIT_USER`: (mandatory): the user that you want to download images from.
+- `-e REDDIT_SOURCE`: (mandatory): the source type on Reddit where the files are located; `user` or `subreddit`.
+- `-e REDDIT_USER`: (mandatory): the name of the user or subreddit you want to download media from.
 
 #### Volume
 
@@ -65,11 +67,9 @@ This application will automatically delete all files that are identical.
 
 You can convert the media downloaded to better formats (WebP for images and WebM for videos); this will make the files smaller but preserving the same quality. To do that you should:
 
-- **CLI tool:** add the parameters `--convert-images` and/or `--convert-videos`, depending on what you need. However, in order for the conversion to work, you must have the dependencies [libwebp](https://developers.google.com/speed/webp/download) and [FFmpeg](https://www.ffmpeg.org/download.html) installed in your computer.
-  
-  You can check if the dependencies are properly installed and ready to be used with **reddit-dl** by running the command `reddit-dl check-deps`.
+- **CLI tool:** add the parameters `--convert-images` and/or `--convert-videos`, depending on what you need.
 
-- **Docker:** if you don't want to worry about installing dependencies, you can use **reddit-dl** with Docker and add the environment variables `-e REDDIT_CONVERT_IMAGES=true` and/or `-e REDDIT_CONVERT_VIDEOS=true` when you run the container.
+- **Docker:** add the environment variables `-e REDDIT_CONVERT_IMAGES=true` and/or `-e REDDIT_CONVERT_VIDEOS=true` when you run the container.
 
 ## 🛠️ Build
 

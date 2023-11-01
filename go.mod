@@ -3,7 +3,6 @@ module reddit
 go 1.21
 
 require (
-	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/go-resty/resty/v2 v2.10.0
 	github.com/google/uuid v1.4.0
 	github.com/mixpanel/mixpanel-go v1.2.0
@@ -17,7 +16,6 @@ require (
 	atomicgo.dev/cursor v0.2.0 // indirect
 	atomicgo.dev/keyboard v0.2.9 // indirect
 	atomicgo.dev/schedule v0.1.0 // indirect
-	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/gookit/color v1.5.4 // indirect

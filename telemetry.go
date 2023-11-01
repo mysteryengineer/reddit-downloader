@@ -11,8 +11,8 @@ var distinctId = uuid.New().String()
 
 func TrackDownloadStart(
 	version string,
-	service string,
-	user string,
+	source string,
+	name string,
 	parallel int,
 	limit int,
 	convertImages bool,
@@ -23,8 +23,8 @@ func TrackDownloadStart(
 	_ = mp.Track(ctx, []*mixpanel.Event{
 		mp.NewEvent("Reddit Download Start", distinctId, map[string]any{
 			"version":       version,
-			"service":       service,
-			"user":          user,
+			"source":        source,
+			"name":          name,
 			"parallel":      parallel,
 			"limit":         limit,
 			"convertImages": convertImages,
@@ -35,8 +35,8 @@ func TrackDownloadStart(
 
 func TrackDownloadEnd(
 	version string,
-	service string,
-	user string,
+	source string,
+	name string,
 	mediaFound int,
 	failedDownloads int,
 	duplicated int,
@@ -46,8 +46,8 @@ func TrackDownloadEnd(
 	_ = mp.Track(ctx, []*mixpanel.Event{
 		mp.NewEvent("Reddit Download End", distinctId, map[string]any{
 			"version":         version,
-			"service":         service,
-			"user":            user,
+			"source":          source,
+			"name":            name,
 			"mediaFound":      mediaFound,
 			"failedDownloads": failedDownloads,
 			"duplicated":      duplicated,
