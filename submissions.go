@@ -10,6 +10,19 @@ import (
 
 var client = resty.New()
 
+func CheckSource(source string, name string) error {
+	if source == "user" {
+		url := createUserUrl(name, "")
+		resp, err := client.R().Get(url)
+
+		if resp.StatusCode() != 200 || err != nil {
+			return fmt.Errorf("Error fetching user %s", name)
+		}
+	}
+
+	return nil
+}
+
 func GetUserMedias(name string, limit int) []Submission {
 	var after string
 	var response Response

@@ -130,7 +130,7 @@ func main() {
 				return fmt.Errorf("Directory path %s is invalid", directory)
 			}
 
-			startJob(
+			err = startJob(
 				cCtx.App.Version,
 				source,
 				name,
@@ -142,7 +142,7 @@ func main() {
 				convertVideos,
 			)
 
-			return nil
+			return err
 		},
 		Commands: []*cli.Command{
 			{
@@ -173,7 +173,12 @@ func startJob(
 	noTelemetry bool,
 	convertImages bool,
 	convertVideos bool,
-) {
+) error {
+	err := CheckSource(source, name)
+	if err != nil {
+		return err
+	}
+
 	if !noTelemetry {
 		TrackDownloadStart(version, source, name, parallel, limit, false, false)
 	}
@@ -199,6 +204,7 @@ func startJob(
 	}
 
 	pterm.Println("\n🌟 Done!")
+	return nil
 }
 
 // region
