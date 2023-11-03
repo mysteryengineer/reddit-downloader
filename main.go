@@ -75,12 +75,12 @@ func main() {
 			},
 			&cli.IntFlag{
 				Name:        "limit",
-				Value:       1000,
+				Value:       1_000_000,
 				Usage:       "the maximum number of files to be downloaded",
 				Destination: &limit,
 				Category:    "Optional:",
 				EnvVars:     []string{"REDDIT_LIMIT"},
-				DefaultText: "1000",
+				DefaultText: "all files",
 				Action: func(context *cli.Context, i int) error {
 					if i < 1 {
 						return fmt.Errorf("The number of max downloads should be at least 1")
