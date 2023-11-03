@@ -5,34 +5,53 @@ import (
 	"github.com/spf13/afero"
 	"github.com/thoas/go-funk"
 	"path/filepath"
+	"sync"
 )
 
 var fs = afero.NewOsFs()
 
 func ConvertImages(downloads []Download) {
+	var wg sync.WaitGroup // wait group to wait for all goroutines to complete
+	sem := make(chan struct{}, 5)
+
 	filteredDownloads := funk.Filter(downloads, func(download Download) bool {
 		extension := filepath.Ext(download.FilePath)
 		return extension == ".jpg" || extension == ".jpeg" || extension == ".png"
 	}).([]Download)
 
 	if len(filteredDownloads) > 0 {
-		pterm.Println("\n⚙️ Converting images to WebP...")
+		pterm.Println("\n⚙️ Converting image to WebP...")
 	}
 
-	for _, images := range filteredDownloads {
-		outputFile := ReplaceExtension(images.FilePath, ".webp")
+	for _, image := range filteredDownloads {
+		wg.Add(1)
 
-		pterm.Printf("["+pterm.Green("C")+"] Converting %s to WebP...\n", images.FilePath)
-		ConvertToWebP(images.FilePath, outputFile)
+		go func(download Download) {
+			defer wg.Done()
+			sem <- struct{}{} // acquire a semaphore token
 
-		// If the file was converted successfully, then we delete the original file
-		if fileExists(images.FilePath) {
-			_ = fs.Remove(images.FilePath)
-		}
+			outputFile := ReplaceExtension(download.FilePath, ".webp")
+
+			pterm.Printf("["+pterm.Green("C")+"] Converting %s to WebP...\n", download.FilePath)
+			ConvertToWebP(download.FilePath, outputFile)
+
+			// If the file was converted successfully, then we delete the original file
+			if fileExists(download.FilePath) {
+				_ = fs.Remove(download.FilePath)
+			}
+
+			<-sem
+		}(image)
 	}
+
+	wg.Wait()
+	close(sem)
 }
 
 func ConvertVideos(downloads []Download) {
+	var wg sync.WaitGroup // wait group to wait for all goroutines to complete
+	sem := make(chan struct{}, 5)
+
 	filteredDownloads := funk.Filter(downloads, func(download Download) bool {
 		extension := filepath.Ext(download.FilePath)
 		return extension == ".gif" || extension == ".mp4" || extension == ".m4v"
@@ -43,16 +62,28 @@ func ConvertVideos(downloads []Download) {
 	}
 
 	for _, video := range filteredDownloads {
-		outputFile := ReplaceExtension(video.FilePath, ".webm")
+		wg.Add(1)
 
-		pterm.Printf("["+pterm.Green("C")+"] Converting %s to WebM...\n", video.FilePath)
-		ConvertToWebM(video.FilePath, outputFile)
+		go func(download Download) {
+			defer wg.Done()
+			sem <- struct{}{} // acquire a semaphore token
 
-		// If the file was converted successfully, then we delete the original file
-		if fileExists(video.FilePath) {
-			_ = fs.Remove(video.FilePath)
-		}
+			outputFile := ReplaceExtension(download.FilePath, ".webm")
+
+			pterm.Printf("["+pterm.Green("C")+"] Converting %s to WebM...\n", download.FilePath)
+			ConvertToWebM(download.FilePath, outputFile)
+
+			// If the file was converted successfully, then we delete the original file
+			if fileExists(download.FilePath) {
+				_ = fs.Remove(download.FilePath)
+			}
+
+			<-sem
+		}(video)
 	}
+
+	wg.Wait()
+	close(sem)
 }
 
 func RemoveDuplicates(downloads []Download) int {

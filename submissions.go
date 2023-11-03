@@ -16,7 +16,7 @@ func CheckSource(source string, name string) error {
 		resp, err := client.R().Get(url)
 
 		if resp.StatusCode() != 200 || err != nil {
-			return fmt.Errorf("Error fetching user %s", name)
+			return fmt.Errorf("Error fetching user '%s'", name)
 		}
 	}
 
