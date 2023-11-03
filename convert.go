@@ -54,7 +54,7 @@ func ConvertVideos(downloads []Download) {
 
 	filteredDownloads := funk.Filter(downloads, func(download Download) bool {
 		extension := filepath.Ext(download.FilePath)
-		return extension == ".gif" || extension == ".mp4" || extension == ".m4v"
+		return extension == ".gif" || extension == ".gifv" || extension == ".mp4" || extension == ".m4v"
 	}).([]Download)
 
 	if len(filteredDownloads) > 0 {
