@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func DownloadMedias(submissions []Submission, name string, directory string, parallel int) []Download {
+func DownloadMedias(submissions []Submission, directory string, parallel int) []Download {
 	var mu sync.Mutex     // mutex to protect shared data
 	var wg sync.WaitGroup // wait group to wait for all goroutines to complete
 	sem := make(chan struct{}, parallel)
@@ -32,7 +32,7 @@ func DownloadMedias(submissions []Submission, name string, directory string, par
 			defer wg.Done()
 
 			sem <- struct{}{} // acquire a semaphore token
-			filePath := createFilePath(submission, index+1, name, directory)
+			filePath := createFilePath(submission, index+1, directory)
 			err := downloadMedia(submission, filePath)
 
 			mu.Lock()
@@ -53,14 +53,14 @@ func DownloadMedias(submissions []Submission, name string, directory string, par
 
 // region - Private functions
 
-func createFilePath(submission Submission, index int, name string, directory string) string {
+func createFilePath(submission Submission, index int, directory string) string {
 	t := time.Unix(submission.Created, 0)
 
 	// Go uses a specific layout to represent the time format
 	// It is based on the time: Mon Jan 2 15:04:05 MST 2006
 	formattedTime := t.Format("20060102-150405")
 
-	fileName := fmt.Sprintf("%s-%s-%d", formattedTime, name, index)
+	fileName := fmt.Sprintf("%s-%s-%d", formattedTime, submission.Author, index)
 	extension := filepath.Ext(submission.Url)
 
 	if extension != "" {

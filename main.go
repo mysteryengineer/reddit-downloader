@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/pterm/pterm"
+	"github.com/thoas/go-funk"
 	"github.com/urfave/cli/v2"
 	"os"
 	"path/filepath"
@@ -183,14 +184,15 @@ func startJob(
 		TrackDownloadStart(version, source, name, parallel, limit, false, false)
 	}
 
-	submissions := GetUserMedias(name, limit)
+	submissions := GetMedias(source, name, limit)
 
-	downloads := DownloadMedias(submissions, name, directory, parallel)
+	downloads := DownloadMedias(submissions, directory, parallel)
 
+	failed := funk.Filter(downloads, func(download Download) bool { return !download.IsSuccess }).([]Download)
 	duplicated := RemoveDuplicates(downloads)
 
 	if !noTelemetry {
-		TrackDownloadEnd(version, source, name, len(submissions), 0, duplicated)
+		TrackDownloadEnd(version, source, name, len(submissions), len(failed), duplicated)
 	}
 
 	CreateReport(directory, downloads)

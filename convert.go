@@ -19,6 +19,10 @@ func ConvertImages(downloads []Download) {
 		return extension == ".jpg" || extension == ".jpeg" || extension == ".png"
 	}).([]Download)
 
+	filteredDownloads = funk.Filter(filteredDownloads, func(download Download) bool {
+		return fileExists(download.FilePath)
+	}).([]Download)
+
 	if len(filteredDownloads) > 0 {
 		pterm.Println("\n⚙️ Converting image to WebP...")
 	}
@@ -55,6 +59,10 @@ func ConvertVideos(downloads []Download) {
 	filteredDownloads := funk.Filter(downloads, func(download Download) bool {
 		extension := filepath.Ext(download.FilePath)
 		return extension == ".gif" || extension == ".gifv" || extension == ".mp4" || extension == ".m4v"
+	}).([]Download)
+
+	filteredDownloads = funk.Filter(filteredDownloads, func(download Download) bool {
+		return fileExists(download.FilePath)
 	}).([]Download)
 
 	if len(filteredDownloads) > 0 {

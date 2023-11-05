@@ -5,7 +5,6 @@ import (
 	"github.com/go-resty/resty/v2"
 	"github.com/pterm/pterm"
 	"github.com/thoas/go-funk"
-	"math"
 )
 
 var client = resty.New()
@@ -18,21 +17,33 @@ func CheckSource(source string, name string) error {
 		if resp.StatusCode() != 200 || err != nil {
 			return fmt.Errorf("Error fetching user '%s'", name)
 		}
+	} else {
+		url := createSubredditUrl(name, "")
+		resp, err := client.R().Get(url)
+
+		if resp.StatusCode() != 200 || err != nil {
+			return fmt.Errorf("Error fetching subreddit '%s'", name)
+		}
 	}
 
 	return nil
 }
 
-func GetUserMedias(name string, limit int) []Submission {
+func GetMedias(source string, name string, limit int) []Submission {
 	var after string
 	var response Response
+	var url string
 	submissions := make([]Submission, 0)
-	counter := 0
 
-	pterm.Print("\n📝 Collecting files from user ", pterm.Bold.Sprintf(name), " ")
+	pterm.Print("\n📝 Collecting files from ", source, " ", pterm.Bold.Sprintf(name), " ")
 
 	for {
-		url := createUserUrl(name, after)
+		if source == "user" {
+			url = createUserUrl(name, after)
+		} else {
+			url = createSubredditUrl(name, after)
+		}
+
 		_, _ = client.R().SetResult(&response).Get(url)
 
 		list := response.Data.Children
@@ -47,10 +58,9 @@ func GetUserMedias(name string, limit int) []Submission {
 			after = response.Data.After
 		}
 
-		counter++
 		pterm.Print(".")
 
-		if len(list) == 0 || counter >= int(math.Ceil(float64(limit)/100)) || after == "" {
+		if len(list) == 0 || len(submissions) >= limit || after == "" {
 			break
 		}
 	}
@@ -69,6 +79,10 @@ func GetUserMedias(name string, limit int) []Submission {
 func createUserUrl(user string, after string) string {
 	return fmt.Sprintf("https://www.reddit.com/user/%s/submitted.json?limit=100&sort=new&after=%s&raw_json=1",
 		user, after)
+}
+
+func createSubredditUrl(subreddit string, after string) string {
+	return fmt.Sprintf("https://www.reddit.com/r/%s/hot.json?limit=100&after=%s&raw_json=1", subreddit, after)
 }
 
 func getUniqueSubmissions(submissions []Submission) []Submission {

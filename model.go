@@ -19,6 +19,7 @@ type Children struct {
 }
 
 type Submission struct {
+	Author   string `json:"author"`
 	Domain   string `json:"domain"`
 	Url      string `json:"url"`
 	PostHint string `json:"post_hint"`
@@ -59,6 +60,7 @@ func hasSuffix(s string, suffix string) bool {
 
 func (s *Submission) UnmarshalJSON(data []byte) error {
 	type submissionAlias struct {
+		Author   string `json:"author"`
 		Domain   string `json:"domain"`
 		Url      string `json:"url"`
 		PostHint string `json:"post_hint"`
@@ -70,6 +72,7 @@ func (s *Submission) UnmarshalJSON(data []byte) error {
 	}
 
 	// Copy the values from alias to the actual struct
+	s.Author = alias.Author
 	s.Domain = alias.Domain
 	s.Url = alias.Url
 	s.PostHint = alias.PostHint

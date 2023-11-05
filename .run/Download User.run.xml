@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Run" type="GoApplicationRunConfiguration" factoryName="Go Application">
+  <configuration default="false" name="Download User" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="reddit-downloader" />
     <working_directory value="$PROJECT_DIR$" />
     <parameters value="-s user -n atomicbrunette18" />

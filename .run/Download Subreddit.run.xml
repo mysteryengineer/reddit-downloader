@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Download Subreddit" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="reddit-downloader" />
+    <working_directory value="$PROJECT_DIR$" />
+    <parameters value="-s subreddit -n BreedingMaterial" />
+    <kind value="PACKAGE" />
+    <package value="reddit" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$/main.go" />
+    <method v="2" />
+  </configuration>
+</component>
