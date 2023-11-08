@@ -23,7 +23,7 @@ There are 2 ways to use this app: through the CLI tool or using Docker. Here are
 Download the [latest version](https://github.com/vegidio/reddit-downloader/releases) of __reddit-dl__ that matches your computer architecture and operating system. Extract the .zip file somewhere and then run the command below in the terminal:
 
 ```
-$ reddit-dl -s user -u atomicbrunette18 -d /Downloads/Reddit
+$ reddit-dl -s user -n atomicbrunette18 -d /Downloads/Reddit
 ```
 
 Where:
@@ -49,7 +49,7 @@ $ docker run --rm -t \
 Where:
 
 - `-e REDDIT_SOURCE`: (mandatory): the source type on Reddit where the files are located; `user` or `subreddit`.
-- `-e REDDIT_USER`: (mandatory): the name of the user or subreddit you want to download media from.
+- `-e REDDIT_NAME`: (mandatory): the name of the user or subreddit you want to download media from.
 
 #### Volume
 
