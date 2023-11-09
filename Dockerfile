@@ -14,7 +14,7 @@ RUN GOARCH=$TARGETARCH go build -o reddit-dl
 
 ### Main Image ###
 FROM alpine:edge
-LABEL maintainer="Vinicius Egidio <me@vinicius.io>"
+LABEL org.opencontainers.image.source="https://github.com/mysteryengineer/reddit-downloader"
 
 # Dependencies
 RUN apk add --no-cache yt-dlp libwebp-tools ffmpeg --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community

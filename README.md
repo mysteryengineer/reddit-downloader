@@ -4,10 +4,6 @@ Download all the pictures/videos posts from a particular user on Reddit. It also
 
 **✨ Works with new Reddit API restrictions of July 1st 2023!**
 
-## 🎥 Demo
-
-[![asciicast](https://asciinema.org/a/HEdsWHzkGMjiRutUr4wAJkvHB.svg)](https://asciinema.org/a/HEdsWHzkGMjiRutUr4wAJkvHB)
-
 ## 🖼️ Usage
 
 There are 2 ways to use this app: through the CLI tool or using Docker. Here are some points to consider to help you choose which solution is best for you:
@@ -20,7 +16,7 @@ There are 2 ways to use this app: through the CLI tool or using Docker. Here are
 
 ### CLI Tool
 
-Download the [latest version](https://github.com/vegidio/reddit-downloader/releases) of __reddit-dl__ that matches your computer architecture and operating system. Extract the .zip file somewhere and then run the command below in the terminal:
+Download the [latest version](https://github.com/mysteryengineer/reddit-downloader/releases) of __reddit-dl__ that matches your computer architecture and operating system. Extract the .zip file somewhere and then run the command below in the terminal:
 
 ```
 $ reddit-dl -s user -n atomicbrunette18 -d /Downloads/Reddit
@@ -43,7 +39,7 @@ $ docker run --rm -t \
     -e REDDIT_SOURCE=user \
     -e REDDIT_NAME=atomicbrunette18 \
     -v "/path/in/your/computer:/tmp/reddit" \
-    vegidio/reddit-downloader
+    ghcr.io/mysteryengineer/reddit-downloader
 ```
 
 Where:
@@ -82,7 +78,7 @@ $ go build -o reddit-dl
 
 Docker:
 ```
-$ docker build -t vegidio/reddit-downloader .
+$ docker build -t ghcr.io/mysteryengineer/reddit-downloader .
 ```
 
 ## 📈 Telemetry
@@ -94,7 +90,3 @@ This app collects information about the data that you're downloading to help me 
 ## 📝 License
 
 **reddit-dl** is released under the MIT License. See [LICENSE](LICENSE) for details.
-
-## 👨🏾‍💻 Author
-
-Vinicius Egidio ([vinicius.io](http://vinicius.io))
