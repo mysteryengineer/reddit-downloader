@@ -4,6 +4,10 @@ Download all the pictures/videos posts from a particular user on Reddit. It also
 
 **✨ Works with new Reddit API restrictions of July 1st 2023!**
 
+## 🎥 Demo
+
+[![asciicast](https://asciinema.org/a/BHbFOMd9pIaXRykcPYFfJAbgE.svg)](https://asciinema.org/a/BHbFOMd9pIaXRykcPYFfJAbgE)
+
 ## 🖼️ Usage
 
 There are 2 ways to use this app: through the CLI tool or using Docker. Here are some points to consider to help you choose which solution is best for you:

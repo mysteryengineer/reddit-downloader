@@ -187,12 +187,13 @@ func startJob(
 	submissions := GetMedias(source, name, limit)
 
 	downloads := DownloadMedias(submissions, directory, parallel)
+	successes := funk.Filter(downloads, func(download Download) bool { return download.IsSuccess }).([]Download)
+	failures := funk.Filter(downloads, func(download Download) bool { return !download.IsSuccess }).([]Download)
 
-	failed := funk.Filter(downloads, func(download Download) bool { return !download.IsSuccess }).([]Download)
-	duplicated := RemoveDuplicates(downloads)
+	duplicated := RemoveDuplicates(successes)
 
 	if !noTelemetry {
-		TrackDownloadEnd(version, source, name, len(submissions), len(failed), duplicated)
+		TrackDownloadEnd(version, source, name, len(submissions), len(failures), duplicated)
 	}
 
 	CreateReport(directory, downloads)
