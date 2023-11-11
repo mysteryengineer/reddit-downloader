@@ -6,7 +6,7 @@ Download all the pictures/videos posts from a particular user on Reddit. It also
 
 ## 🎥 Demo
 
-[![asciicast](https://asciinema.org/a/BHbFOMd9pIaXRykcPYFfJAbgE.svg)](https://asciinema.org/a/BHbFOMd9pIaXRykcPYFfJAbgE)
+[![asciicast](https://asciinema.org/a/UOZGHxGQWkkKwFkh18VAFLf1e.svg)](https://asciinema.org/a/UOZGHxGQWkkKwFkh18VAFLf1e)
 
 ## 🖼️ Usage
 
