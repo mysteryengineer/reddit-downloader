@@ -9,17 +9,17 @@ import (
 	"strings"
 )
 
-func ConvertToWebP(inputFile string, outputFile string) {
-	_, _ = runCommand("cwebp %s -o %s", inputFile, outputFile)
+func ConvertToAvif(inputFile string, outputFile string) {
+	_, _ = runCommand("avifenc %s %s", inputFile, outputFile)
 }
 
-func ConvertToWebM(inputFile string, outputFile string) {
+func ConvertToAv1(inputFile string, outputFile string) {
 	var command string
 
 	if filepath.Ext(inputFile) == ".gif" {
-		command = "ffmpeg -i %s -row-mt 1 -movflags faststart -pix_fmt yuv420p -vf scale=trunc(iw/2)*2:trunc(ih/2)*2 %s"
+		command = "ffmpeg -i %s -c:v libsvtav1 -movflags faststart -pix_fmt yuv420p -vf scale=trunc(iw/2)*2:trunc(ih/2)*2 %s"
 	} else {
-		command = "ffmpeg -i %s -row-mt 1 %s"
+		command = "ffmpeg -i %s -c:v libsvtav1 %s"
 	}
 
 	_, _ = runCommand(command, inputFile, outputFile)
@@ -28,7 +28,7 @@ func ConvertToWebM(inputFile string, outputFile string) {
 func CheckDeps() {
 	dependencies := map[string]string{
 		"yt-dlp":  "yt-dlp --version",
-		"libwebp": "cwebp -version",
+		"libavif": "avifenc --version",
 		"FFmpeg":  "ffmpeg -version",
 	}
 

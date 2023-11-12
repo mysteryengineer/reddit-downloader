@@ -6,7 +6,7 @@ Download all the pictures/videos posts from a particular user on Reddit. It also
 
 ## 🎥 Demo
 
-[![asciicast](https://asciinema.org/a/UOZGHxGQWkkKwFkh18VAFLf1e.svg)](https://asciinema.org/a/UOZGHxGQWkkKwFkh18VAFLf1e)
+[![asciicast](https://asciinema.org/a/I1kPDU24ecJF0mNKspBCqzMGd.svg)](https://asciinema.org/a/I1kPDU24ecJF0mNKspBCqzMGd)
 
 ## 🖼️ Usage
 
@@ -14,7 +14,7 @@ There are 2 ways to use this app: through the CLI tool or using Docker. Here are
 
 1. **CLI tool**: this is quick and easier way to use __reddit-dl__ however you must make sure that you have some dependencies installed in your computer before using it.
 
-    - *Dependencies:* Install [yt-dlp](https://github.com/yt-dlp/yt-dlp#installation) (required) and [libwebp](https://developers.google.com/speed/webp/download) / [FFmpeg](https://www.ffmpeg.org/download.html) (both optional) before using the CLI tool. You can verify if all dependencies are properly installed by running the command `reddit-dl check-deps`.
+    - *Dependencies:* Install [yt-dlp](https://github.com/yt-dlp/yt-dlp#installation) (required) and [libavif](https://github.com/AOMediaCodec/libavif) / [FFmpeg](https://www.ffmpeg.org/download.html) (both optional) before using the CLI tool. You can verify if all dependencies are properly installed by running the command `reddit-dl check-deps`.
 
 2. **Docker**: if you don't want to worry about installing dependencies in your computer before using __reddit-dl__ then the Docker version is probably better since it comes with all the dependencies ready to use.
 
@@ -65,7 +65,7 @@ This application will automatically delete all files that are identical.
 
 ### Convert images/videos
 
-You can convert the media downloaded to better formats (WebP for images and WebM for videos); this will make the files smaller but preserving the same quality. To do that you should:
+You can convert the media downloaded to better formats (AVIF for images and AV1 for videos); this will make the files smaller but preserving the same quality. To do that you should:
 
 - **CLI tool:** add the parameters `--convert-images` and/or `--convert-videos`, depending on what you need.
 

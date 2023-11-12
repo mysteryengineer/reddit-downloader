@@ -101,7 +101,7 @@ func main() {
 			&cli.BoolFlag{
 				Name:               "convert-images",
 				Value:              false,
-				Usage:              "enable the conversion of images to WebP",
+				Usage:              "enable the conversion of images to AVIF",
 				Destination:        &convertImages,
 				Category:           "Optional:",
 				DisableDefaultText: true,
@@ -110,7 +110,7 @@ func main() {
 			&cli.BoolFlag{
 				Name:               "convert-videos",
 				Value:              false,
-				Usage:              "enable the conversion of videos to WebM",
+				Usage:              "enable the conversion of videos to AV1",
 				Destination:        &convertVideos,
 				Category:           "Optional:",
 				DisableDefaultText: true,
