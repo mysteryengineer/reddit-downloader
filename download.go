@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 )
@@ -79,7 +80,7 @@ func createFilePath(submission Submission, index int, directory string) string {
 func downloadMedia(submission Submission, filePath string) error {
 	var err error
 
-	if submission.MediaType() == Image {
+	if submission.MediaType() == Image && !strings.Contains(submission.Url, "redgifs.com") {
 		err = downloadImage(submission.Url, filePath)
 	} else {
 		err = downloadVideo(submission.Url, filePath)
