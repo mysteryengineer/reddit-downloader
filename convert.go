@@ -42,7 +42,7 @@ func ConvertImages(downloads []Download) {
 			ConvertToAvif(download.FilePath, outputFile)
 
 			// If the file was converted successfully, then we delete the original file
-			if fileExists(outputFile) {
+			if fileExists(outputFile) && fileSize(outputFile) > 0 {
 				_ = fs.Remove(download.FilePath)
 			}
 
@@ -86,7 +86,7 @@ func ConvertVideos(downloads []Download) {
 			ConvertToAv1(download.FilePath, outputFile)
 
 			// If the file was converted successfully, then we delete the original file
-			if fileExists(outputFile) {
+			if fileExists(outputFile) && fileSize(outputFile) > 0 {
 				_ = fs.Remove(download.FilePath)
 			}
 
@@ -112,7 +112,8 @@ func RemoveDuplicates(downloads []Download) int {
 		deleteList := value[1:]
 
 		for _, deleteFile := range deleteList {
-			pterm.Printf("["+pterm.LightRed("D")+"] Deleting %s...\n", pterm.Bold.Sprintf(deleteFile.FilePath))
+			fileName := filepath.Base(deleteFile.FilePath)
+			pterm.Printf("["+pterm.LightRed("D")+"] Deleting %s...\n", pterm.Bold.Sprintf(fileName))
 			numDeleted++
 			_ = fs.Remove(deleteFile.FilePath)
 		}
@@ -130,6 +131,22 @@ func fileExists(filePath string) bool {
 	}
 
 	return exists
+}
+
+func fileSize(filePath string) int64 {
+	file, err := fs.Open(filePath)
+	if err != nil {
+		return -1
+	}
+
+	defer file.Close()
+
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return -1
+	}
+
+	return fileInfo.Size()
 }
 
 // endregion
