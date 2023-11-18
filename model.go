@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"path/filepath"
 	"strings"
 )
 
@@ -18,6 +19,8 @@ type Children struct {
 	Data Submission `json:"data"`
 }
 
+// region - Submission
+
 type Submission struct {
 	Author   string `json:"author"`
 	Domain   string `json:"domain"`
@@ -25,16 +28,6 @@ type Submission struct {
 	PostHint string `json:"post_hint"`
 	Created  int64  `json:"created_utc"`
 }
-
-type Download struct {
-	Url       string
-	FilePath  string
-	Error     error
-	IsSuccess bool
-	Hash      string
-}
-
-// region - Methods
 
 func (s *Submission) MediaType() MediaType {
 	if hasSuffix(s.Url, ".jpg") || hasSuffix(s.Url, ".jpeg") {
@@ -49,14 +42,6 @@ func (s *Submission) MediaType() MediaType {
 
 	return Video
 }
-
-func hasSuffix(s string, suffix string) bool {
-	return strings.HasSuffix(strings.ToLower(s), strings.ToLower(suffix))
-}
-
-// endregion
-
-// region - Custom Unmarshal
 
 func (s *Submission) UnmarshalJSON(data []byte) error {
 	type submissionAlias struct {
@@ -92,12 +77,40 @@ func (s *Submission) UnmarshalJSON(data []byte) error {
 
 // endregion
 
-// region - Sort
+// region - Download
+
+type Download struct {
+	Url       string
+	FilePath  string
+	Error     error
+	IsSuccess bool
+	Hash      string
+}
+
+func (d *Download) MediaType() MediaType {
+	extension := filepath.Ext(d.FilePath)
+
+	if extension == ".jpg" || extension == ".jpeg" || extension == ".png" {
+		return Image
+	} else if extension == ".gif" || extension == ".gifv" || extension == ".mp4" || extension == ".m4v" {
+		return Video
+	}
+
+	return Unknown
+}
 
 type ByFilePath []Download
 
 func (a ByFilePath) Len() int           { return len(a) }
 func (a ByFilePath) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByFilePath) Less(i, j int) bool { return a[i].FilePath < a[j].FilePath }
+
+// endregion
+
+// region - Methods
+
+func hasSuffix(s string, suffix string) bool {
+	return strings.HasSuffix(strings.ToLower(s), strings.ToLower(suffix))
+}
 
 // endregion

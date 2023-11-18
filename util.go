@@ -19,11 +19,6 @@ func ExpandPath(path string) (string, error) {
 	return path, nil
 }
 
-func ReplaceExtension(filePath string, newExtension string) string {
-	extension := filepath.Ext(filePath)
-	return strings.Replace(filePath, extension, newExtension, 1)
-}
-
 func CreateReport(directory string, downloads []Download) {
 	filePath := filepath.Join(directory, "_report.md")
 	file, err := os.Create(filePath)
