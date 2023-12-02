@@ -19,7 +19,7 @@ func ConvertToAv1(inputFile string, outputFile string) {
 	if filepath.Ext(inputFile) == ".gif" {
 		command = "ffmpeg -i %s -c:v libsvtav1 -movflags faststart -pix_fmt yuv420p -vf scale=trunc(iw/2)*2:trunc(ih/2)*2 %s"
 	} else {
-		command = "ffmpeg -i %s -c:v libsvtav1 %s"
+		command = "ffmpeg -i %s -c:v libsvtav1 -c:a libopus -ac 2 %s"
 	}
 
 	_, _ = runCommand(command, inputFile, outputFile)
