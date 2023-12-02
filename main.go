@@ -190,7 +190,7 @@ func startJob(
 	successes := funk.Filter(downloads, func(download Download) bool { return download.IsSuccess }).([]Download)
 	failures := funk.Filter(downloads, func(download Download) bool { return !download.IsSuccess }).([]Download)
 
-	duplicated := RemoveDuplicates(successes)
+	duplicated, successes := RemoveDuplicates(successes)
 
 	if !noTelemetry {
 		TrackDownloadEnd(version, source, name, len(submissions), len(failures), duplicated)

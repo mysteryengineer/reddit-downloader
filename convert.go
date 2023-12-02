@@ -69,10 +69,11 @@ func ConvertMedia(downloads []Download, convertImages bool, convertVideos bool) 
 	close(sem)
 }
 
-func RemoveDuplicates(downloads []Download) int {
+func RemoveDuplicates(downloads []Download) (int, []Download) {
 	numDeleted := 0
-
+	remaining := make([]Download, 0)
 	duplicates := make(map[string][]Download)
+
 	for _, download := range downloads {
 		duplicates[download.Hash] = append(duplicates[download.Hash], download)
 	}
@@ -80,6 +81,7 @@ func RemoveDuplicates(downloads []Download) int {
 	pterm.Println("\n🚮 Removing duplicated downloads...")
 
 	for _, value := range duplicates {
+		remaining = append(remaining, value[0])
 		deleteList := value[1:]
 
 		for _, deleteFile := range deleteList {
@@ -90,7 +92,7 @@ func RemoveDuplicates(downloads []Download) int {
 		}
 	}
 
-	return numDeleted
+	return numDeleted, remaining
 }
 
 // region - Private functions
