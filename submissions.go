@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/go-resty/resty/v2"
+	"github.com/jinzhu/copier"
 	"github.com/pterm/pterm"
 	"github.com/thoas/go-funk"
 )
@@ -47,9 +48,28 @@ func GetMedias(source string, name string, limit int) []Submission {
 		_, _ = client.R().SetResult(&response).Get(url)
 
 		list := response.Data.Children
-		submissions = append(submissions, funk.Map(list, func(c Children) Submission {
-			return c.Data
-		}).([]Submission)...)
+		flatMap := funk.FlatMap(list, func(c Children) []Submission {
+			if c.Data.IsGallery {
+				gallery := make([]Submission, 0)
+
+				for _, value := range c.Data.MediaMetadata {
+					s := value.(map[string]interface{})["s"]
+					itemUrl := s.(map[string]interface{})["u"].(string)
+
+					item := Submission{}
+					copier.Copy(&item, &c.Data)
+					item.Url = itemUrl
+
+					gallery = append(gallery, item)
+				}
+
+				return gallery
+			} else {
+				return []Submission{c.Data}
+			}
+		}).([]Submission)
+
+		submissions = append(submissions, flatMap...)
 
 		// Getting the last "after"
 		if response.Data.After == after {

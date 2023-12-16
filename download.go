@@ -7,6 +7,7 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/spf13/afero"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -62,7 +63,8 @@ func createFilePath(submission Submission, index int, directory string) string {
 	formattedTime := t.Format("20060102-150405")
 
 	fileName := fmt.Sprintf("%s-%s-%d", formattedTime, submission.Author, index)
-	extension := filepath.Ext(submission.Url)
+	parsedUrl, _ := url.Parse(submission.Url)
+	extension := filepath.Ext(parsedUrl.Path)
 
 	if extension != "" {
 		fileName += extension

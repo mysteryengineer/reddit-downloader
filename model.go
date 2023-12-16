@@ -22,11 +22,13 @@ type Children struct {
 // region - Submission
 
 type Submission struct {
-	Author   string `json:"author"`
-	Domain   string `json:"domain"`
-	Url      string `json:"url"`
-	PostHint string `json:"post_hint"`
-	Created  int64  `json:"created_utc"`
+	Author        string                 `json:"author"`
+	Domain        string                 `json:"domain"`
+	Url           string                 `json:"url"`
+	PostHint      string                 `json:"post_hint"`
+	Created       int64                  `json:"created_utc"`
+	IsGallery     bool                   `json:"is_gallery"`
+	MediaMetadata map[string]interface{} `json:"media_metadata"`
 }
 
 func (s *Submission) MediaType() MediaType {
@@ -36,7 +38,7 @@ func (s *Submission) MediaType() MediaType {
 		return Image
 	} else if hasSuffix(s.Url, ".gifv") || hasSuffix(s.Url, ".mp4") || hasSuffix(s.Url, ".m4v") {
 		return Video
-	} else if s.PostHint == "image" {
+	} else if s.PostHint == "image" || s.IsGallery {
 		return Image
 	}
 
@@ -45,10 +47,12 @@ func (s *Submission) MediaType() MediaType {
 
 func (s *Submission) UnmarshalJSON(data []byte) error {
 	type submissionAlias struct {
-		Author   string `json:"author"`
-		Domain   string `json:"domain"`
-		Url      string `json:"url"`
-		PostHint string `json:"post_hint"`
+		Author        string                 `json:"author"`
+		Domain        string                 `json:"domain"`
+		Url           string                 `json:"url"`
+		PostHint      string                 `json:"post_hint"`
+		IsGallery     bool                   `json:"is_gallery"`
+		MediaMetadata map[string]interface{} `json:"media_metadata"`
 	}
 
 	var alias submissionAlias
@@ -61,6 +65,8 @@ func (s *Submission) UnmarshalJSON(data []byte) error {
 	s.Domain = alias.Domain
 	s.Url = alias.Url
 	s.PostHint = alias.PostHint
+	s.IsGallery = alias.IsGallery
+	s.MediaMetadata = alias.MediaMetadata
 
 	// Handle "Created" separately
 	var raw map[string]interface{}

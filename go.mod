@@ -5,6 +5,7 @@ go 1.21
 require (
 	github.com/go-resty/resty/v2 v2.10.0
 	github.com/google/uuid v1.4.0
+	github.com/jinzhu/copier v0.4.0
 	github.com/mixpanel/mixpanel-go v1.2.0
 	github.com/pterm/pterm v0.12.69
 	github.com/spf13/afero v1.10.0
