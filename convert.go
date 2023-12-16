@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/thoas/go-funk"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 )
@@ -28,6 +29,7 @@ func ConvertMedia(downloads []Download, convertImages bool, convertVideos bool) 
 	}
 
 	if len(downloads) > 0 {
+		sort.Sort(ByFilePath(downloads))
 		pterm.Println("\n⚙️ Converting media...")
 	}
 

@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
-	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -49,7 +48,6 @@ func DownloadMedias(submissions []Submission, directory string, parallel int) []
 	wg.Wait()
 	close(sem)
 
-	sort.Sort(ByFilePath(downloads))
 	return downloads
 }
 
