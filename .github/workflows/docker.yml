@@ -1,9 +1,10 @@
 name: docker
 
 on:
-  push:
-    tags:
-      - 'coco'
+  workflow_run:
+    workflows: ["build"]
+    types:
+      - completed
 
 env:
   IMAGE_NAME: ghcr.io/mysteryengineer/reddit-downloader
@@ -12,10 +13,15 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       - name: Set variables
         id: vars
         run: |
-          echo "VERSION=$(date +'%y.%-m.%-d')" >> $GITHUB_ENV
+          VERSION=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v2

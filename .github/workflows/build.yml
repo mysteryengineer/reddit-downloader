@@ -34,7 +34,7 @@ jobs:
       id: changelog
       run: |
         mkdir -p builds
-        echo "Changes in this release:\n" > builds/changelog.md
+        echo "Changes in this release:" > builds/changelog.md
         git log $(git describe --tags --abbrev=0 \
           $(git describe --tags --abbrev=0)^)^..$(git describe --tags --abbrev=0) \
           --pretty=format:"- %s" >> builds/changelog.md
