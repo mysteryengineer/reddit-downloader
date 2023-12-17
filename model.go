@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+type Tag struct {
+	Name string `json:"name"`
+}
+
 type Response struct {
 	Data ResponseData `json:"data"`
 }

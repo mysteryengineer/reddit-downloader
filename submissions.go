@@ -2,13 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/go-resty/resty/v2"
 	"github.com/jinzhu/copier"
 	"github.com/pterm/pterm"
 	"github.com/thoas/go-funk"
 )
-
-var client = resty.New()
 
 func CheckSource(source string, name string) error {
 	if source == "user" {

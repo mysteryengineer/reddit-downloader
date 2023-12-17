@@ -175,6 +175,10 @@ func startJob(
 	convertImages bool,
 	convertVideos bool,
 ) error {
+	if IsOutdated(version, "mysteryengineer/reddit-downloader") {
+		pterm.Println(pterm.Yellow("\n✨ There's a new version of Reddit Downloader available for download!"))
+	}
+
 	err := CheckSource(source, name)
 	if err != nil {
 		return err
