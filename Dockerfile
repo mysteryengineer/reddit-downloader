@@ -1,13 +1,16 @@
 ### Build Image ###
-FROM --platform=$BUILDPLATFORM golang:alpine AS BUILD_IMAGE
+FROM --platform=$BUILDPLATFORM alpine:edge AS BUILD_IMAGE
 ARG TARGETARCH
 ARG VERSION
 
-# Build project
-COPY . /reddit
+# Dependencies
+RUN apk add --no-cache wget --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
+
+# Download the binary
+RUN mkdir /reddit
 WORKDIR /reddit
-RUN sed -i "s/<version>/$VERSION/g" main.go
-RUN GOARCH=$TARGETARCH go build -o reddit-dl
+RUN wget https://github.com/mysteryengineer/reddit-downloader/releases/download/$VERSION/reddit-dl_linux_$TARGETARCH.zip
+RUN unzip reddit-dl_linux_$TARGETARCH.zip
 
 ### Main Image ###
 FROM alpine:edge

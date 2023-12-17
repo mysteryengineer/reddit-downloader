@@ -82,7 +82,7 @@ $ go build -o reddit-dl
 
 Docker:
 ```
-$ docker build -t ghcr.io/mysteryengineer/reddit-downloader .
+$ docker build -t ghcr.io/mysteryengineer/reddit-downloader . --build-arg="VERSION=23.12.17"
 ```
 
 ## 📈 Telemetry
