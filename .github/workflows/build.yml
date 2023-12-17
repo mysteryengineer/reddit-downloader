@@ -11,8 +11,12 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      VERSION: ${{ steps.vars.outputs.VERSION }}
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     - name: Set up Go
       uses: actions/setup-go@v4
@@ -24,10 +28,19 @@ jobs:
       run: |
         VERSION=${GITHUB_REF#refs/tags/}
         sed -i "s/<version>/$VERSION/g" main.go
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Creating the ChangeLog
+      id: changelog
+      run: |
+        mkdir -p builds
+        echo "Changes in this release:\n" > builds/changelog.md
+        git log $(git describe --tags --abbrev=0 \
+          $(git describe --tags --abbrev=0)^)^..$(git describe --tags --abbrev=0) \
+          --pretty=format:"- %s" >> builds/changelog.md
 
     - name: Build Linux binaries
       run: |
-        mkdir -p builds
         GOOS=linux GOARCH=amd64 go build -o builds/${{ env.BINARY_NAME }}
         zip -j -9 builds/${{ env.BINARY_NAME }}_linux_amd64.zip builds/${{ env.BINARY_NAME }}
         
@@ -69,11 +82,6 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Set variables
-        id: vars
-        run: |
-          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
       - name: Fetch artifact
         uses: actions/download-artifact@v3
         with:
@@ -81,8 +89,8 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          name: ${{ env.VERSION }}
-          tag: ${{ env.VERSION }}
-          commit: main
+          name: ${{ needs.build.outputs.VERSION }}
+          tag: ${{ needs.build.outputs.VERSION }}
+          bodyFile: changelog.md
           replacesArtifacts: true
           artifacts: "*.zip"
