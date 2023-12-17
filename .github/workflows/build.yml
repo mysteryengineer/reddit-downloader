@@ -2,7 +2,8 @@ name: build
 
 on:
   push:
-    branches: main
+    tags:
+      - '*'
 
 env:
   BINARY_NAME: reddit-dl
@@ -21,8 +22,8 @@ jobs:
     - name: Set version
       id: vars
       run: |
-        version=$(date +'%y.%-m.%-d')
-        sed -i "s/<version>/$version/g" main.go
+        VERSION=${GITHUB_REF#refs/tags/}
+        sed -i "s/<version>/$VERSION/g" main.go
 
     - name: Build Linux binaries
       run: |
@@ -71,7 +72,7 @@ jobs:
       - name: Set variables
         id: vars
         run: |
-          echo "VERSION=$(date +'%y.%-m.%-d')" >> $GITHUB_ENV
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Fetch artifact
         uses: actions/download-artifact@v3
@@ -83,6 +84,5 @@ jobs:
           name: ${{ env.VERSION }}
           tag: ${{ env.VERSION }}
           commit: main
-          allowUpdates: true
           replacesArtifacts: true
           artifacts: "*.zip"
