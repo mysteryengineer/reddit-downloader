@@ -1,10 +1,7 @@
 ### Build Image ###
-FROM --platform=$BUILDPLATFORM alpine:edge AS BUILD_IMAGE
+FROM --platform=$BUILDPLATFORM golang:alpine AS BUILD_IMAGE
 ARG TARGETARCH
 ARG VERSION
-
-# Installing UnZip
-RUN apk add --no-cache go --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
 
 # Build project
 COPY . /reddit
