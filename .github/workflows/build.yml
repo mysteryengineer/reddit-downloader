@@ -13,16 +13,17 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       VERSION: ${{ steps.vars.outputs.VERSION }}
+
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+    - name: Code checkout
+      uses: actions/checkout@v3
 
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
         go-version: '1.21'
 
+    # We use $GITHUB_OUTPUT instead of $GITHUB_ENV because this variable will be used in the next job
     - name: Set version
       id: vars
       run: |
@@ -30,17 +31,9 @@ jobs:
         sed -i "s/<version>/$VERSION/g" main.go
         echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
-    - name: Creating the ChangeLog
-      id: changelog
-      run: |
-        mkdir -p builds
-        echo "Changes in this release:" > builds/changelog.md
-        git log $(git describe --tags --abbrev=0 \
-          $(git describe --tags --abbrev=0)^)^..$(git describe --tags --abbrev=0) \
-          --pretty=format:"- %s" >> builds/changelog.md
-
     - name: Build Linux binaries
       run: |
+        mkdir -p builds
         GOOS=linux GOARCH=amd64 go build -o builds/${{ env.BINARY_NAME }}
         zip -j -9 builds/${{ env.BINARY_NAME }}_linux_amd64.zip builds/${{ env.BINARY_NAME }}
         
@@ -82,10 +75,23 @@ jobs:
     permissions:
       contents: write
     steps:
+      # The `fetch-depth: 0` is important to fetch all the tags
+      - name: Code checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       - name: Fetch artifact
         uses: actions/download-artifact@v3
         with:
           name: binaries
+
+      - name: Creating the ChangeLog
+        run: |
+          echo "Changes in this release:" > changelog.md
+          git log $(git describe --tags --abbrev=0 \
+            $(git describe --tags --abbrev=0)^)^..$(git describe --tags --abbrev=0) \
+            --pretty=format:"- %s" >> changelog.md
 
       - uses: ncipollo/release-action@v1
         with:
