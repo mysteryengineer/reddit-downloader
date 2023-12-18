@@ -5,6 +5,8 @@ on:
     workflows: ["build"]
     types:
       - completed
+  schedule:
+    - cron: '0 0 1 * *' # For more: https://crontab.guru
 
 env:
   IMAGE_NAME: ghcr.io/mysteryengineer/reddit-downloader
@@ -13,14 +15,10 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
       - name: Set variables
         id: vars
         run: |
-          VERSION=$(git describe --tags `git rev-list --tags --max-count=1`)
+          VERSION=$(curl -s "https://api.github.com/repos/$GITHUB_REPOSITORY/tags" | jq -r '.[0].name')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Setup QEMU
