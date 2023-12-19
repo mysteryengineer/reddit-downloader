@@ -1,0 +1,17 @@
+name: close-stale
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # For more: https://crontab.guru/#0_0_*_*_*
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close Stale Issues
+        uses: actions/stale@v9.0.0
+        with:
+          stale-issue-message: 'This issue is stale because it has been open 10 days with no activity. Add a new comment or it will be closed in 5 days.'
+          close-issue-message: 'This issue is now closed. If you have a similar issue or want to continue the discussion, then please open a new one.'
+          days-before-issue-stale: 10
+          days-before-issue-close: 15

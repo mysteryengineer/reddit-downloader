@@ -6,7 +6,7 @@ on:
     types:
       - completed
   schedule:
-    - cron: '0 0 1 * *' # For more: https://crontab.guru
+    - cron: '0 0 1 * *' # For more: https://crontab.guru/#0_0_1_*_*
 
 env:
   IMAGE_NAME: ghcr.io/mysteryengineer/reddit-downloader
