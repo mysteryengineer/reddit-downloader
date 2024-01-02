@@ -7,6 +7,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func main() {
@@ -20,6 +21,7 @@ func main() {
 	var convertVideos bool
 
 	currentPath, _ := os.Getwd()
+	extensions := make([]string, 0)
 
 	app := &cli.App{
 		Name:            "reddit-dl",
@@ -89,10 +91,30 @@ func main() {
 					return nil
 				},
 			},
+			&cli.StringFlag{
+				Name:        "extensions",
+				Value:       "",
+				Usage:       "filter the downloads to only certain file extensions, separated by comma",
+				Category:    "Optional:",
+				EnvVars:     []string{"REDDIT_EXTENSIONS"},
+				DefaultText: "all extensions",
+				Action: func(context *cli.Context, s string) error {
+					split := strings.Split(s, ",")
+					split = funk.Map(split, func(ext string) string {
+						return "." + strings.ToLower(strings.TrimSpace(ext))
+					}).([]string)
+					split = funk.Filter(split, func(ext string) bool {
+						return len(ext) > 1
+					}).([]string)
+
+					extensions = append(extensions, split...)
+					return nil
+				},
+			},
 			&cli.BoolFlag{
 				Name:               "no-telemetry",
 				Value:              false,
-				Usage:              "if you want to disable the telemetry",
+				Usage:              "disable the telemetry",
 				Destination:        &noTelemetry,
 				Category:           "Optional:",
 				DisableDefaultText: true,
@@ -138,6 +160,7 @@ func main() {
 				fullDir,
 				parallel,
 				limit,
+				extensions,
 				noTelemetry,
 				convertImages,
 				convertVideos,
@@ -171,6 +194,7 @@ func startJob(
 	directory string,
 	parallel int,
 	limit int,
+	extensions []string,
 	noTelemetry bool,
 	convertImages bool,
 	convertVideos bool,
@@ -189,6 +213,11 @@ func startJob(
 	}
 
 	submissions := GetMedias(source, name, limit)
+	numSubmissions := len(submissions)
+
+	if len(extensions) > 0 {
+		submissions = FilterExtensions(submissions, extensions)
+	}
 
 	downloads := DownloadMedias(submissions, directory, parallel)
 	successes := funk.Filter(downloads, func(download Download) bool { return download.IsSuccess }).([]Download)
@@ -197,7 +226,7 @@ func startJob(
 	duplicated, successes := RemoveDuplicates(successes)
 
 	if !noTelemetry {
-		TrackDownloadEnd(version, source, name, len(submissions), len(failures), duplicated)
+		TrackDownloadEnd(version, source, name, numSubmissions, len(failures), duplicated)
 	}
 
 	CreateReport(directory, downloads)

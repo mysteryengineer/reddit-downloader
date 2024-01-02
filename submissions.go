@@ -5,6 +5,7 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/pterm/pterm"
 	"github.com/thoas/go-funk"
+	"strings"
 )
 
 func CheckSource(source string, name string) error {
@@ -87,8 +88,20 @@ func GetMedias(source string, name string, limit int) []Submission {
 		submissions = submissions[:limit]
 	}
 
-	pterm.Printf(" %d/%d unique posts found\n\n", len(submissions), limit)
+	pterm.Printf(" %d/%d unique posts found\n", len(submissions), limit)
 	return submissions
+}
+
+func FilterExtensions(submissions []Submission, extensions []string) []Submission {
+	ext := strings.Join(extensions, ", ")
+	pterm.Print("🔍 Filtering files with extension ", pterm.Bold.Sprintf(ext), " ... ")
+
+	filtered := funk.Filter(submissions, func(submission Submission) bool {
+		return funk.ContainsString(extensions, submission.Ext())
+	}).([]Submission)
+
+	pterm.Printf("%d files remained\n", len(filtered))
+	return filtered
 }
 
 // region - Private functions

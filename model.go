@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"net/url"
 	"path/filepath"
 	"strings"
 )
@@ -47,6 +48,21 @@ func (s *Submission) MediaType() MediaType {
 	}
 
 	return Video
+}
+
+func (s *Submission) Ext() string {
+	parsedUrl, _ := url.Parse(s.Url)
+	extension := strings.ToLower(filepath.Ext(parsedUrl.Path))
+
+	if extension != "" {
+		return extension
+	} else {
+		if s.MediaType() == Image {
+			return ".jpg"
+		} else {
+			return ".mp4"
+		}
+	}
 }
 
 func (s *Submission) UnmarshalJSON(data []byte) error {

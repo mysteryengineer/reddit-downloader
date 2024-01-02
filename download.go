@@ -7,7 +7,6 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/spf13/afero"
 	"net/http"
-	"net/url"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -21,6 +20,7 @@ func DownloadMedias(submissions []Submission, directory string, parallel int) []
 
 	downloads := make([]Download, 0)
 
+	pterm.Println() // Intentional line break
 	pb, _ := pterm.DefaultProgressbar.
 		WithTotal(len(submissions)).
 		Start("Downloading")
@@ -61,18 +61,7 @@ func createFilePath(submission Submission, index int, directory string) string {
 	formattedTime := t.Format("20060102-150405")
 
 	fileName := fmt.Sprintf("%s-%s-%d", formattedTime, submission.Author, index)
-	parsedUrl, _ := url.Parse(submission.Url)
-	extension := filepath.Ext(parsedUrl.Path)
-
-	if extension != "" {
-		fileName += extension
-	} else {
-		if submission.MediaType() == Image {
-			fileName += ".jpg"
-		} else {
-			fileName += ".mp4"
-		}
-	}
+	fileName += submission.Ext()
 
 	return filepath.Join(directory, fileName)
 }
