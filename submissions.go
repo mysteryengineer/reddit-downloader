@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/jinzhu/copier"
 	"github.com/pterm/pterm"
@@ -51,14 +52,15 @@ func GetMedias(source string, name string, limit int) []Submission {
 				gallery := make([]Submission, 0)
 
 				for _, value := range c.Data.MediaMetadata {
-					s := value.(map[string]interface{})["s"]
-					itemUrl := s.(map[string]interface{})["u"].(string)
+					meta := getMediaMetadata(value)
 
-					item := Submission{}
-					copier.Copy(&item, &c.Data)
-					item.Url = itemUrl
+					if meta.Status == "valid" {
+						item := Submission{}
+						copier.Copy(&item, &c.Data)
+						item.Url = meta.Media()
 
-					gallery = append(gallery, item)
+						gallery = append(gallery, item)
+					}
 				}
 
 				return gallery
@@ -113,6 +115,14 @@ func createUserUrl(user string, after string) string {
 
 func createSubredditUrl(subreddit string, after string) string {
 	return fmt.Sprintf("https://www.reddit.com/r/%s/hot.json?limit=100&after=%s&raw_json=1", subreddit, after)
+}
+
+func getMediaMetadata(value interface{}) MediaMetadata {
+	var metadata MediaMetadata
+	jsonData, _ := json.Marshal(value)
+	json.Unmarshal(jsonData, &metadata)
+
+	return metadata
 }
 
 func getUniqueSubmissions(submissions []Submission) []Submission {

@@ -105,6 +105,28 @@ func (s *Submission) UnmarshalJSON(data []byte) error {
 
 // region - Download
 
+// region - MediaMetadata
+
+type MediaMetadata struct {
+	Status string `json:"status"`
+	S      Static `json:"s"`
+}
+
+func (m *MediaMetadata) Media() string {
+	if m.S.Image != "" {
+		return m.S.Image
+	} else {
+		return m.S.Gif
+	}
+}
+
+// endregion
+
+type Static struct {
+	Image string `json:"u"`
+	Gif   string `json:"gif"`
+}
+
 type Download struct {
 	Url       string
 	FilePath  string
